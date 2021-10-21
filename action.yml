@@ -1,0 +1,13 @@
+name: 'Cerbos Setup Action'
+description: 'Setups cerbos by downloading and adding to the path'
+author: 'Cerbos'
+
+inputs:
+  version:
+    description: 'Cerbos tooling version to download'
+    required: true
+    default: '0.8.0'
+
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
