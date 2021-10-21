@@ -1,12 +1,29 @@
+// Copyright 2021 Zenauth Ltd.
+// SPDX-License-Identifier: Apache-2.0
+
 import * as core from '@actions/core'
-import * as os from 'os'
 import * as tc from '@actions/tool-cache'
 
 const binaryNames = ['cerbos', 'cerbosctl']
 
-async function download(): Promise<void> {
-  const version = core.getInput('version')
-  const cerbosBinaryUrl = `https://github.com/cerbos/cerbos/releases/download/v${version}/cerbos_${version}_Linux_x86_64.tar.gz`
+async function download(
+  architecture: string,
+  os: string,
+  version: string
+): Promise<void> {
+  let urlArchitecture = ''
+  let urlOs = ''
+
+  if (architecture === 'x64') {
+    urlArchitecture = 'x86_64'
+  } else {
+    urlArchitecture = architecture
+  }
+
+  urlOs = os.charAt(0).toUpperCase() + os.slice(1)
+
+  const cerbosBinaryUrl = `https://github.com/cerbos/cerbos/releases/download/v${version}/cerbos_${version}_${urlOs}_${urlArchitecture}.tar.gz`
+
   let extractedPath = ''
   const cacheDirs: string[] = []
 
@@ -27,12 +44,7 @@ async function download(): Promise<void> {
     core.info('Adding cerbos binaries to the cache')
 
     for (const binary of binaryNames) {
-      const cacheDir = await tc.cacheDir(
-        extractedPath,
-        binary,
-        version,
-        os.arch()
-      )
+      const cacheDir = await tc.cacheDir(extractedPath, binary, version, os)
 
       cacheDirs.push(cacheDir)
 
