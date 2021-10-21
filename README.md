@@ -1,43 +1,21 @@
-# cerbos/cerbos-setup-action
+# Cerbos Setup Action
 
-Install `cerbos` and `cerbosctl` binaries to GitHub Actions tool cache.
+A GitHub action to install [Cerbos](https://github.com/cerbos/cerbos) binaries for use in workflows.
 
-## Prerequisites
+Cerbos helps you super-charge your authorization implementation by writing context-aware access control policies for your application resources. Find out more about Cerbos using the following resources:
 
-None
+* [Cerbos website](https://cerbos.dev)
+* [Cerbos documentation](https://docs.cerbos.dev)
+* [Cerbos GitHub repository](https://github.com/cerbos/cerbos)
+* [Cerbos Slack community](http://go.cerbos.io/slack)
 
-## Inputs
-
-Please see action.yaml for inputs.
-
-## How To Use
-
-Please see the following workflow example;
+## Usage
 
 ```
----
-name: PR Check
-on:
-  pull_request:
-    branches:
-      - master
-jobs:
-  cerbos:
-    name: Cerbos
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup Cerbos
-        uses: cerbos/cerbos-setup-action@v1
-        with:
-          version: 0.8.0
+steps:
+  - name: Setup Cerbos
+    uses: cerbos/cerbos-setup-action@master
+    with:
+      version: 0.8.0
 ```
 
-# cerbos/cerbos-setup-action development
-
-After changing the code, execute the following commands;
-
-```
-npm run build && npm run format && npm run lint && npm run package && npm test
-```
-
-`npm run package` will create or overwrite the `dist/index.js` and `dist/index.js` which is the running part of the GitHub Action.
