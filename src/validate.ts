@@ -11,7 +11,7 @@ async function validate(runningEnvironment: RunningEnvironment): Promise<void> {
       break
     default:
       core.setFailed('Unsupported operating system')
-      return
+      process.exit(1)
   }
 
   switch (runningEnvironment.architecture) {
@@ -20,7 +20,7 @@ async function validate(runningEnvironment: RunningEnvironment): Promise<void> {
       break
     default:
       core.setFailed('Unsupported architecture')
-      return
+      process.exit(1)
   }
 }
 

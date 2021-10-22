@@ -52,6 +52,7 @@ function downloadAndCache(url, version) {
         }
         catch (error) {
             core.setFailed(`Error occured during retrieval of cerbos binary. ${error}`);
+            process.exit(1);
         }
         try {
             core.info('Adding cerbos binaries to the cache');
@@ -63,6 +64,7 @@ function downloadAndCache(url, version) {
         }
         catch (error) {
             core.setFailed(`Error occured while adding cerbos binaries to tooling cache. ${error}`);
+            process.exit(1);
         }
         try {
             core.info('Adding cerbos binaries to path');
@@ -73,6 +75,7 @@ function downloadAndCache(url, version) {
         }
         catch (error) {
             core.setFailed(`Error occured while adding cerbos binaries to path. ${error}`);
+            process.exit(1);
         }
     });
 }
@@ -192,12 +195,13 @@ const core = __importStar(__nccwpck_require__(2186));
 const core_1 = __nccwpck_require__(6762);
 function getURLToDownload(runningEnvironment, version) {
     return __awaiter(this, void 0, void 0, function* () {
-        const assetName = ` cerbos_${version}_${runningEnvironment.os}_${runningEnvironment.architecture}.tar.gz`;
+        const assetName = `cerbos_${version}_${runningEnvironment.os}_${runningEnvironment.architecture}.tar.gz`;
         const octokit = new core_1.Octokit();
         const { data: releases } = yield octokit.request('GET /repos/{owner}/{repo}/releases', {
             owner: 'cerbos',
             repo: 'cerbos'
         });
+        core.info(`Looking for asset ${assetName} in Cerbos releases.`);
         for (const release of releases) {
             for (const asset of release.assets) {
                 if (asset.name === assetName) {
@@ -206,7 +210,7 @@ function getURLToDownload(runningEnvironment, version) {
             }
         }
         core.setFailed(`Couldn't find the release asset with version ${version}`);
-        return '';
+        process.exit(1);
     });
 }
 exports.default = getURLToDownload;
@@ -303,6 +307,7 @@ const validate_1 = __importDefault(__nccwpck_require__(1997));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         const inputVersion = core.getInput('version');
+        core.info(`version from input: ${inputVersion}`);
         const runningEnvironment = yield (0, get_running_environment_1.default)();
         yield (0, validate_1.default)(runningEnvironment);
         const version = yield (0, get_version_1.default)(inputVersion);
@@ -360,7 +365,7 @@ function validate(runningEnvironment) {
                 break;
             default:
                 core.setFailed('Unsupported operating system');
-                return;
+                process.exit(1);
         }
         switch (runningEnvironment.architecture) {
             case 'x86_64' || 0:
@@ -368,7 +373,7 @@ function validate(runningEnvironment) {
                 break;
             default:
                 core.setFailed('Unsupported architecture');
-                return;
+                process.exit(1);
         }
     });
 }

@@ -18,6 +18,7 @@ async function downloadAndCache(url: string, version: string): Promise<void> {
     core.info(`Successfully extracted binaries to ${extractedPath}`)
   } catch (error) {
     core.setFailed(`Error occured during retrieval of cerbos binary. ${error}`)
+    process.exit(1)
   }
 
   try {
@@ -34,6 +35,7 @@ async function downloadAndCache(url: string, version: string): Promise<void> {
     core.setFailed(
       `Error occured while adding cerbos binaries to tooling cache. ${error}`
     )
+    process.exit(1)
   }
 
   try {
@@ -48,6 +50,7 @@ async function downloadAndCache(url: string, version: string): Promise<void> {
     core.setFailed(
       `Error occured while adding cerbos binaries to path. ${error}`
     )
+    process.exit(1)
   }
 }
 

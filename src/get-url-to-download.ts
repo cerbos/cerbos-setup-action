@@ -9,7 +9,7 @@ async function getURLToDownload(
   runningEnvironment: RunningEnvironment,
   version: string
 ): Promise<string> {
-  const assetName = ` cerbos_${version}_${runningEnvironment.os}_${runningEnvironment.architecture}.tar.gz`
+  const assetName = `cerbos_${version}_${runningEnvironment.os}_${runningEnvironment.architecture}.tar.gz`
   const octokit = new Octokit()
   const {data: releases} = await octokit.request(
     'GET /repos/{owner}/{repo}/releases',
@@ -18,6 +18,8 @@ async function getURLToDownload(
       repo: 'cerbos'
     }
   )
+
+  core.info(`Looking for asset ${assetName} in Cerbos releases.`)
 
   for (const release of releases) {
     for (const asset of release.assets) {
@@ -28,7 +30,7 @@ async function getURLToDownload(
   }
 
   core.setFailed(`Couldn't find the release asset with version ${version}`)
-  return ''
+  process.exit(1)
 }
 
 export default getURLToDownload

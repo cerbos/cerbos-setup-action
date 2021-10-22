@@ -10,6 +10,9 @@ import validate from './validate'
 
 async function run(): Promise<void> {
   const inputVersion = core.getInput('version')
+
+  core.info(`version from input: ${inputVersion}`)
+
   const runningEnvironment = await getRunningEnvironment()
   await validate(runningEnvironment)
 
