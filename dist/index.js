@@ -362,7 +362,8 @@ const core = __importStar(__nccwpck_require__(2186));
 function validate(runningEnvironment) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (runningEnvironment.os) {
-            case 'Linux' || 0:
+            case 'Linux':
+            case 'Darwin':
                 core.info(`Operating System: ${runningEnvironment.os}`);
                 break;
             default:
@@ -370,7 +371,8 @@ function validate(runningEnvironment) {
                 process.exit(1);
         }
         switch (runningEnvironment.architecture) {
-            case 'x86_64' || 0:
+            case 'x86_64':
+            case 'arm64':
                 core.info(`Architecture: ${runningEnvironment.architecture}`);
                 break;
             default:
