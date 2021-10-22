@@ -15,10 +15,10 @@ async function getVersion(inputVersion: string): Promise<string> {
       }
     )
 
-    return release.tag_name.split('v', 0)[1]
+    return release.tag_name.split('v')[1]
   } else {
     if (inputVersion.startsWith('v')) {
-      return inputVersion.split('v', 0)[1]
+      return inputVersion.split('v')[1]
     } else {
       return inputVersion
     }

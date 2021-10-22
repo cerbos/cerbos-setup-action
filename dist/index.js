@@ -244,11 +244,11 @@ function getVersion(inputVersion) {
                 owner: 'cerbos',
                 repo: 'cerbos'
             });
-            return release.tag_name.split('v', 0)[1];
+            return release.tag_name.split('v')[1];
         }
         else {
             if (inputVersion.startsWith('v')) {
-                return inputVersion.split('v', 0)[1];
+                return inputVersion.split('v')[1];
             }
             else {
                 return inputVersion;
@@ -309,7 +309,7 @@ const validate_1 = __importDefault(__nccwpck_require__(1997));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         const inputVersion = core.getInput('version');
-        core.info(`version from input: ${inputVersion}`);
+        core.info(`Version from input: ${inputVersion}`);
         const runningEnvironment = yield (0, get_running_environment_1.default)();
         yield (0, validate_1.default)(runningEnvironment);
         const version = yield (0, get_version_1.default)(inputVersion);
@@ -362,7 +362,8 @@ const core = __importStar(__nccwpck_require__(2186));
 function validate(runningEnvironment) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (runningEnvironment.os) {
-            case 'Linux' || 0:
+            case 'Linux':
+            case 'Darwin':
                 core.info(`Operating System: ${runningEnvironment.os}`);
                 break;
             default:
@@ -370,7 +371,8 @@ function validate(runningEnvironment) {
                 process.exit(1);
         }
         switch (runningEnvironment.architecture) {
-            case 'x86_64' || 0:
+            case 'x86_64':
+            case 'arm64':
                 core.info(`Architecture: ${runningEnvironment.architecture}`);
                 break;
             default:
