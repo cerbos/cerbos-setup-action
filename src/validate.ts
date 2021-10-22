@@ -6,7 +6,7 @@ import {RunningEnvironment} from './get-running-environment'
 
 async function validate(runningEnvironment: RunningEnvironment): Promise<void> {
   switch (runningEnvironment.os) {
-    case 'linux' || 'darwin':
+    case 'Linux' || 'Darwin':
       core.info(`Operating System: ${runningEnvironment.os}`)
       break
     default:
@@ -15,7 +15,7 @@ async function validate(runningEnvironment: RunningEnvironment): Promise<void> {
   }
 
   switch (runningEnvironment.architecture) {
-    case 'x64' || 'arm64':
+    case 'x86_64' || 'arm64':
       core.info(`Architecture: ${runningEnvironment.architecture}`)
       break
     default:

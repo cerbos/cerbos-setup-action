@@ -6,33 +6,13 @@ import * as tc from '@actions/tool-cache'
 
 const binaryNames = ['cerbos', 'cerbosctl']
 
-async function download(
-  architecture: string,
-  os: string,
-  version: string
-): Promise<void> {
-  let urlArchitecture = ''
-  let urlOs = ''
-
-  if (architecture === 'x64') {
-    urlArchitecture = 'x86_64'
-  } else {
-    urlArchitecture = architecture
-  }
-
-  urlOs = os.charAt(0).toUpperCase() + os.slice(1)
-
-  const cerbosBinaryUrl = `https://github.com/cerbos/cerbos/releases/download/v${version}/cerbos_${version}_${urlOs}_${urlArchitecture}.tar.gz`
-
+async function downloadAndCache(url: string, version: string): Promise<void> {
   let extractedPath = ''
-  const cacheDirs: string[] = []
-
-  core.info(
-    `Downloading release with version ${version} from ${cerbosBinaryUrl}.`
-  )
+  const cacheDirs = []
+  core.info(`Downloading release from ${url}.`)
 
   try {
-    const binaryPath = await tc.downloadTool(cerbosBinaryUrl)
+    const binaryPath = await tc.downloadTool(url)
     extractedPath = await tc.extractTar(binaryPath)
 
     core.info(`Successfully extracted binaries to ${extractedPath}`)
@@ -44,7 +24,7 @@ async function download(
     core.info('Adding cerbos binaries to the cache')
 
     for (const binary of binaryNames) {
-      const cacheDir = await tc.cacheDir(extractedPath, binary, version, os)
+      const cacheDir = await tc.cacheDir(extractedPath, binary, version)
 
       cacheDirs.push(cacheDir)
 
@@ -71,4 +51,4 @@ async function download(
   }
 }
 
-export default download
+export default downloadAndCache
