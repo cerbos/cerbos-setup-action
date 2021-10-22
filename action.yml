@@ -6,7 +6,7 @@ inputs:
   version:
     description: 'Cerbos tooling version to download'
     required: true
-    default: '0.8.0'
+    default: 'latest'
 
 runs:
   using: 'node12'

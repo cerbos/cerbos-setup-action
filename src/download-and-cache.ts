@@ -1,38 +1,31 @@
+// Copyright 2021 Zenauth Ltd.
+// SPDX-License-Identifier: Apache-2.0
+
 import * as core from '@actions/core'
-import * as os from 'os'
 import * as tc from '@actions/tool-cache'
 
 const binaryNames = ['cerbos', 'cerbosctl']
 
-async function download(): Promise<void> {
-  const version = core.getInput('version')
-  const cerbosBinaryUrl = `https://github.com/cerbos/cerbos/releases/download/v${version}/cerbos_${version}_Linux_x86_64.tar.gz`
+async function downloadAndCache(url: string, version: string): Promise<void> {
   let extractedPath = ''
-  const cacheDirs: string[] = []
-
-  core.info(
-    `Downloading release with version ${version} from ${cerbosBinaryUrl}.`
-  )
+  const cacheDirs = []
+  core.info(`Downloading release from ${url}.`)
 
   try {
-    const binaryPath = await tc.downloadTool(cerbosBinaryUrl)
+    const binaryPath = await tc.downloadTool(url)
     extractedPath = await tc.extractTar(binaryPath)
 
     core.info(`Successfully extracted binaries to ${extractedPath}`)
   } catch (error) {
     core.setFailed(`Error occured during retrieval of cerbos binary. ${error}`)
+    process.exit(1)
   }
 
   try {
     core.info('Adding cerbos binaries to the cache')
 
     for (const binary of binaryNames) {
-      const cacheDir = await tc.cacheDir(
-        extractedPath,
-        binary,
-        version,
-        os.arch()
-      )
+      const cacheDir = await tc.cacheDir(extractedPath, binary, version)
 
       cacheDirs.push(cacheDir)
 
@@ -42,6 +35,7 @@ async function download(): Promise<void> {
     core.setFailed(
       `Error occured while adding cerbos binaries to tooling cache. ${error}`
     )
+    process.exit(1)
   }
 
   try {
@@ -56,7 +50,8 @@ async function download(): Promise<void> {
     core.setFailed(
       `Error occured while adding cerbos binaries to path. ${error}`
     )
+    process.exit(1)
   }
 }
 
-export default download
+export default downloadAndCache
