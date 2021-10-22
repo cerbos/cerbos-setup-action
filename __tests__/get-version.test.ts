@@ -3,28 +3,6 @@
 
 import {expect, test} from '@jest/globals'
 import getVersion from './../src/get-version'
-import validate from './../src/validate'
-import {RunningEnvironment} from './../src/get-running-environment'
-
-test('test validate()', async () => {
-  const createRunningEnvironment = (os: string, architecture: string) => {
-    return {architecture, os} as RunningEnvironment
-  }
-
-  const testCases = [
-    {input: createRunningEnvironment('Linux', 'x86_64')},
-    {input: createRunningEnvironment('Linux', 'arm64')},
-    {input: createRunningEnvironment('Darwin', 'x86_64')},
-    {input: createRunningEnvironment('Darwin', 'arm64')}
-  ]
-
-  for (const testCase of testCases) {
-    console.log(
-      `Test Case - Input ${testCase.input.os} ${testCase.input.architecture}`
-    )
-    await validate(testCase.input)
-  }
-})
 
 test('test getVersion()', async () => {
   const testCasesWithExpected = [
