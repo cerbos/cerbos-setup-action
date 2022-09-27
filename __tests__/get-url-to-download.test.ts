@@ -36,7 +36,8 @@ test('test getURLToDownload()', async () => {
   for (const testCase of testCases) {
     const url = await getURLToDownload(
       testCase.inputRunningEnvironment,
-      testCase.inputVersion
+      testCase.inputVersion,
+      ''
     )
 
     console.log(
