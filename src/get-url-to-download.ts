@@ -7,10 +7,11 @@ import {RunningEnvironment} from './get-running-environment'
 
 async function getURLToDownload(
   runningEnvironment: RunningEnvironment,
-  version: string
+  version: string,
+  githubToken: string
 ): Promise<string> {
   const assetName = `cerbos_${version}_${runningEnvironment.os}_${runningEnvironment.architecture}.tar.gz`
-  const octokit = new Octokit()
+  const octokit = new Octokit({auth: githubToken})
   const {data: releases} = await octokit.request(
     'GET /repos/{owner}/{repo}/releases',
     {

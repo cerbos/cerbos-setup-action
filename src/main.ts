@@ -10,6 +10,12 @@ import validate from './validate'
 
 async function run(): Promise<void> {
   const inputVersion = core.getInput('version')
+  const inputGitHubToken = core.getInput('github_token')
+  if (inputGitHubToken === '') {
+    core.warning(
+      'github_token is unavailable. Stricter rate limiting will be applied by GitHub.'
+    )
+  }
 
   core.info(`Version from input: ${inputVersion}`)
 
@@ -18,7 +24,11 @@ async function run(): Promise<void> {
 
   const version = await getVersion(inputVersion)
 
-  const url = await getURLToDownload(runningEnvironment, version)
+  const url = await getURLToDownload(
+    runningEnvironment,
+    version,
+    inputGitHubToken
+  )
 
   await downloadAndCache(url, version)
 }
