@@ -3,6 +3,9 @@ description: 'Setups cerbos by downloading and adding to the path'
 author: 'Cerbos'
 
 inputs:
+  github_token:
+    description: 'The GitHub token to use'
+    required: false
   version:
     description: 'Cerbos tooling version to download'
     required: true
