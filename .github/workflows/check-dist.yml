@@ -26,6 +26,7 @@ jobs:
       - name: Set Node.js 16
         uses: actions/setup-node@v2.4.1
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           node-version: 16.x
 
       - name: Install dependencies
