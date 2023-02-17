@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as core from '@actions/core'
+import {Octokit} from '@octokit/core'
+import {HttpsProxyAgent} from 'https-proxy-agent'
 import downloadAndCache from './download-and-cache'
 import getRunningEnvironment from './get-running-environment'
 import getURLToDownload from './get-url-to-download'
@@ -22,13 +24,21 @@ async function run(): Promise<void> {
   const runningEnvironment = await getRunningEnvironment()
   await validate(runningEnvironment)
 
-  const version = await getVersion(inputVersion)
+  const requestAgent = process.env.http_proxy
+    ? new HttpsProxyAgent(process.env.http_proxy)
+    : undefined
+  const octokit = new Octokit({
+    auth: inputGitHubToken,
+    request: {
+      agent: requestAgent
+    },
+    userAgent: process.env['GITHUB_REPOSITORY']
+      ? process.env['GITHUB_REPOSITORY']
+      : 'cerbos-setup-action'
+  })
 
-  const url = await getURLToDownload(
-    runningEnvironment,
-    version,
-    inputGitHubToken
-  )
+  const version = await getVersion(octokit, inputVersion)
+  const url = await getURLToDownload(octokit, runningEnvironment, version)
 
   await downloadAndCache(url, version)
 }

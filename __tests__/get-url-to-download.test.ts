@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {expect, test} from '@jest/globals'
+import {Octokit} from '@octokit/core'
 import getURLToDownload from './../src/get-url-to-download'
 import {createRunningEnvironment} from './test-utils.test'
 
@@ -33,11 +34,12 @@ test('test getURLToDownload()', async () => {
     }
   ]
 
+  const octokit = new Octokit({})
   for (const testCase of testCases) {
     const url = await getURLToDownload(
+      octokit,
       testCase.inputRunningEnvironment,
-      testCase.inputVersion,
-      ''
+      testCase.inputVersion
     )
 
     console.log(

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {expect, test} from '@jest/globals'
+import {Octokit} from '@octokit/core'
 import getVersion from './../src/get-version'
 
 test('test getVersion()', async () => {
@@ -16,8 +17,9 @@ test('test getVersion()', async () => {
     {input: 'latest', unexpected: undefined}
   ]
 
+  const octokit = new Octokit({})
   for (const testCase of testCasesWithExpected) {
-    const version = await getVersion(testCase.input)
+    const version = await getVersion(octokit, testCase.input)
 
     console.log(
       `Test Case - Input ${testCase.input} - Expected ${testCase.expected} - Actual ${version}`
@@ -27,7 +29,7 @@ test('test getVersion()', async () => {
   }
 
   for (const testCase of testCasesWithUnexpected) {
-    const version = await getVersion(testCase.input)
+    const version = await getVersion(octokit, testCase.input)
 
     console.log(
       `Test Case - Input ${testCase.input} - Unexpected ${testCase.unexpected} - Actual ${version}`
