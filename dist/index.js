@@ -204,23 +204,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const core_1 = __nccwpck_require__(6762);
-const https_proxy_agent_1 = __nccwpck_require__(7219);
-function getURLToDownload(runningEnvironment, version, githubToken) {
+function getURLToDownload(octokit, runningEnvironment, version) {
     return __awaiter(this, void 0, void 0, function* () {
         const assetName = `cerbos_${version}_${runningEnvironment.os}_${runningEnvironment.architecture}.tar.gz`;
-        const requestAgent = process.env.http_proxy
-            ? new https_proxy_agent_1.HttpsProxyAgent(process.env.http_proxy)
-            : undefined;
-        const octokit = new core_1.Octokit({
-            auth: githubToken,
-            request: {
-                agent: requestAgent
-            },
-            userAgent: process.env['GITHUB_REPOSITORY']
-                ? process.env['GITHUB_REPOSITORY']
-                : 'cerbos-setup-action'
-        });
         const { data: releases } = yield octokit.request('GET /repos/{owner}/{repo}/releases', {
             owner: 'cerbos',
             repo: 'cerbos'
@@ -243,7 +229,7 @@ exports["default"] = getURLToDownload;
 /***/ }),
 
 /***/ 951:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+/***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
 
@@ -259,11 +245,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core_1 = __nccwpck_require__(6762);
-function getVersion(inputVersion) {
+function getVersion(octokit, inputVersion) {
     return __awaiter(this, void 0, void 0, function* () {
         if (inputVersion === '' || inputVersion === 'latest') {
-            const octokit = new core_1.Octokit();
             const { data: release } = yield octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
                 owner: 'cerbos',
                 repo: 'cerbos'
@@ -329,6 +313,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const core_1 = __nccwpck_require__(6762);
+const https_proxy_agent_1 = __nccwpck_require__(7219);
 const download_and_cache_1 = __importDefault(__nccwpck_require__(1363));
 const get_running_environment_1 = __importDefault(__nccwpck_require__(2904));
 const get_url_to_download_1 = __importDefault(__nccwpck_require__(2514));
@@ -344,8 +330,20 @@ function run() {
         core.info(`Version from input: ${inputVersion}`);
         const runningEnvironment = yield (0, get_running_environment_1.default)();
         yield (0, validate_1.default)(runningEnvironment);
-        const version = yield (0, get_version_1.default)(inputVersion);
-        const url = yield (0, get_url_to_download_1.default)(runningEnvironment, version, inputGitHubToken);
+        const requestAgent = process.env.http_proxy
+            ? new https_proxy_agent_1.HttpsProxyAgent(process.env.http_proxy)
+            : undefined;
+        const octokit = new core_1.Octokit({
+            auth: inputGitHubToken,
+            request: {
+                agent: requestAgent
+            },
+            userAgent: process.env['GITHUB_REPOSITORY']
+                ? process.env['GITHUB_REPOSITORY']
+                : 'cerbos-setup-action'
+        });
+        const version = yield (0, get_version_1.default)(octokit, inputVersion);
+        const url = yield (0, get_url_to_download_1.default)(octokit, runningEnvironment, version);
         yield (0, download_and_cache_1.default)(url, version);
     });
 }

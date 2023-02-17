@@ -3,10 +3,11 @@
 
 import {Octokit} from '@octokit/core'
 
-async function getVersion(inputVersion: string): Promise<string> {
+async function getVersion(
+  octokit: Octokit,
+  inputVersion: string
+): Promise<string> {
   if (inputVersion === '' || inputVersion === 'latest') {
-    const octokit = new Octokit()
-
     const {data: release} = await octokit.request(
       'GET /repos/{owner}/{repo}/releases/latest',
       {

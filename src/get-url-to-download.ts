@@ -3,27 +3,14 @@
 
 import * as core from '@actions/core'
 import {Octokit} from '@octokit/core'
-import {HttpsProxyAgent} from 'https-proxy-agent'
 import {RunningEnvironment} from './get-running-environment'
 
 async function getURLToDownload(
+  octokit: Octokit,
   runningEnvironment: RunningEnvironment,
-  version: string,
-  githubToken: string
+  version: string
 ): Promise<string> {
   const assetName = `cerbos_${version}_${runningEnvironment.os}_${runningEnvironment.architecture}.tar.gz`
-  const requestAgent = process.env.http_proxy
-    ? new HttpsProxyAgent(process.env.http_proxy)
-    : undefined
-  const octokit = new Octokit({
-    auth: githubToken,
-    request: {
-      agent: requestAgent
-    },
-    userAgent: process.env['GITHUB_REPOSITORY']
-      ? process.env['GITHUB_REPOSITORY']
-      : 'cerbos-setup-action'
-  })
   const {data: releases} = await octokit.request(
     'GET /repos/{owner}/{repo}/releases',
     {
