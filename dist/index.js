@@ -208,7 +208,12 @@ const core_1 = __nccwpck_require__(6762);
 function getURLToDownload(runningEnvironment, version, githubToken) {
     return __awaiter(this, void 0, void 0, function* () {
         const assetName = `cerbos_${version}_${runningEnvironment.os}_${runningEnvironment.architecture}.tar.gz`;
-        const octokit = new core_1.Octokit({ auth: githubToken });
+        const octokit = new core_1.Octokit({
+            auth: githubToken,
+            userAgent: process.env['GITHUB_REPOSITORY']
+                ? process.env['GITHUB_REPOSITORY']
+                : 'cerbos-setup-action'
+        });
         const { data: releases } = yield octokit.request('GET /repos/{owner}/{repo}/releases', {
             owner: 'cerbos',
             repo: 'cerbos'

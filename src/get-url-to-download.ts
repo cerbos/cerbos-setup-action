@@ -11,7 +11,12 @@ async function getURLToDownload(
   githubToken: string
 ): Promise<string> {
   const assetName = `cerbos_${version}_${runningEnvironment.os}_${runningEnvironment.architecture}.tar.gz`
-  const octokit = new Octokit({auth: githubToken})
+  const octokit = new Octokit({
+    auth: githubToken,
+    userAgent: process.env['GITHUB_REPOSITORY']
+      ? process.env['GITHUB_REPOSITORY']
+      : 'cerbos-setup-action'
+  })
   const {data: releases} = await octokit.request(
     'GET /repos/{owner}/{repo}/releases',
     {
