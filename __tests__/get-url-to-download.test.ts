@@ -1,6 +1,7 @@
 // Copyright 2021-2023 Zenauth Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
+const fetch = require('node-fetch')
 import {expect, test} from '@jest/globals'
 import {Octokit} from '@octokit/core'
 import getURLToDownload from './../src/get-url-to-download'
@@ -34,7 +35,11 @@ test('test getURLToDownload()', async () => {
     }
   ]
 
-  const octokit = new Octokit({})
+  const octokit = new Octokit({
+    request: {
+      fetch
+    }
+  })
   for (const testCase of testCases) {
     const url = await getURLToDownload(
       octokit,
