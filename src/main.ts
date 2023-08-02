@@ -1,6 +1,7 @@
 // Copyright 2021-2023 Zenauth Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
+import fetch from 'node-fetch'
 import * as core from '@actions/core'
 import {Octokit} from '@octokit/core'
 import {HttpsProxyAgent} from 'https-proxy-agent'
@@ -30,7 +31,8 @@ async function run(): Promise<void> {
   const octokit = new Octokit({
     auth: inputGitHubToken,
     request: {
-      agent: requestAgent
+      agent: requestAgent,
+      fetch
     },
     userAgent: process.env['GITHUB_REPOSITORY']
       ? process.env['GITHUB_REPOSITORY']
