@@ -29,11 +29,11 @@
     "@actions/tool-cache": "^2.0.1",
     "@octokit/core": "^5.0.0",
     "https-proxy-agent": "^7.0.2",
-    "node-fetch": "^2.6.12"
+    "node-fetch": "2.x"
   },
   "devDependencies": {
     "@types/node": "^20.4.5",
-    "@types/node-fetch": "^2.6.4",
+    "@types/node-fetch": "^2.6.6",
     "@typescript-eslint/eslint-plugin": "^6.2.1",
     "@typescript-eslint/parser": "^6.6.0",
     "@vercel/ncc": "^0.36.1",
