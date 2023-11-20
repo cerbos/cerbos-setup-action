@@ -1,7 +1,6 @@
 // Copyright 2021-2023 Zenauth Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
-import fetch from 'node-fetch'
 import * as core from '@actions/core'
 import {Octokit} from '@octokit/core'
 import {HttpsProxyAgent} from 'https-proxy-agent'
