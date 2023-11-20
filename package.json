@@ -29,7 +29,7 @@
     "@actions/tool-cache": "^2.0.1",
     "@octokit/core": "^5.0.1",
     "https-proxy-agent": "^7.0.2",
-    "node-fetch": "2.x"
+    "node-fetch": "3.x"
   },
   "devDependencies": {
     "@types/node": "^20.8.10",
