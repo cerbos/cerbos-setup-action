@@ -10,27 +10,27 @@ test('test getURLToDownload()', async () => {
   const testCases = [
     {
       inputRunningEnvironment: createRunningEnvironment('Linux', 'x86_64'),
-      inputVersion: '0.8.0',
+      inputVersion: '0.33.0',
       expected:
-        'https://github.com/cerbos/cerbos/releases/download/v0.8.0/cerbos_0.8.0_Linux_x86_64.tar.gz'
+        'https://github.com/cerbos/cerbos/releases/download/v0.33.0/cerbos_0.33.0_Linux_x86_64.tar.gz'
     },
     {
       inputRunningEnvironment: createRunningEnvironment('Linux', 'arm64'),
-      inputVersion: '0.8.0',
+      inputVersion: '0.33.0',
       expected:
-        'https://github.com/cerbos/cerbos/releases/download/v0.8.0/cerbos_0.8.0_Linux_arm64.tar.gz'
+        'https://github.com/cerbos/cerbos/releases/download/v0.33.0/cerbos_0.33.0_Linux_arm64.tar.gz'
     },
     {
       inputRunningEnvironment: createRunningEnvironment('Darwin', 'x86_64'),
-      inputVersion: '0.8.0',
+      inputVersion: '0.33.0',
       expected:
-        'https://github.com/cerbos/cerbos/releases/download/v0.8.0/cerbos_0.8.0_Darwin_x86_64.tar.gz'
+        'https://github.com/cerbos/cerbos/releases/download/v0.33.0/cerbos_0.33.0_Darwin_x86_64.tar.gz'
     },
     {
       inputRunningEnvironment: createRunningEnvironment('Darwin', 'arm64'),
-      inputVersion: '0.8.0',
+      inputVersion: '0.33.0',
       expected:
-        'https://github.com/cerbos/cerbos/releases/download/v0.8.0/cerbos_0.8.0_Darwin_arm64.tar.gz'
+        'https://github.com/cerbos/cerbos/releases/download/v0.33.0/cerbos_0.33.0_Darwin_arm64.tar.gz'
     }
   ]
 
