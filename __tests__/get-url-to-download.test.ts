@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {expect, test} from '@jest/globals'
-import {Octokit} from '@octokit/core'
+import {Octokit} from 'octokit'
 import getURLToDownload from './../src/get-url-to-download'
 import {createRunningEnvironment} from './test-utils.test'
 

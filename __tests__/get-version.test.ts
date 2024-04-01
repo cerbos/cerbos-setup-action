@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {expect, test} from '@jest/globals'
-import {Octokit} from '@octokit/core'
+import {Octokit} from 'octokit'
 import getVersion from './../src/get-version'
 
 test('test getVersion()', async () => {

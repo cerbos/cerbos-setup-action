@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as core from '@actions/core'
-import {Octokit} from '@octokit/core'
+import {Octokit} from 'octokit'
 import {HttpsProxyAgent} from 'https-proxy-agent'
 import downloadAndCache from './download-and-cache'
 import getRunningEnvironment from './get-running-environment'
