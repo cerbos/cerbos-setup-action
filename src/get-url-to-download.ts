@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as core from '@actions/core'
-import {Octokit} from '@octokit/core'
+import {Octokit} from 'octokit'
 import {RunningEnvironment} from './get-running-environment'
 
 async function getURLToDownload(

@@ -1,7 +1,7 @@
 // Copyright 2021-2023 Zenauth Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
-import {Octokit} from '@octokit/core'
+import {Octokit} from 'octokit'
 
 async function getVersion(
   octokit: Octokit,
