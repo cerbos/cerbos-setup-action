@@ -4,7 +4,7 @@
 import * as core from '@actions/core'
 import {Octokit} from 'octokit'
 import {HttpsProxyAgent} from 'https-proxy-agent'
-import downloadAndCache from './download-and-cache'
+import downloadAndCache from './download-and-cache.js'
 import getRunningEnvironment from './get-running-environment'
 import getURLToDownload from './get-url-to-download'
 import getVersion from './get-version'
