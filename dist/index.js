@@ -15559,7 +15559,7 @@ module.exports = buildConnector
 
 /***/ }),
 
-/***/ 8088:
+/***/ 5707:
 /***/ ((module) => {
 
 
@@ -16511,7 +16511,7 @@ const { InvalidArgumentError } = __nccwpck_require__(3862)
 const { Blob } = __nccwpck_require__(181)
 const nodeUtil = __nccwpck_require__(9023)
 const { stringify } = __nccwpck_require__(3480)
-const { headerNameLowerCasedRecord } = __nccwpck_require__(8088)
+const { headerNameLowerCasedRecord } = __nccwpck_require__(5707)
 
 const [nodeMajor, nodeMinor] = process.versions.node.split('.').map(v => Number(v))
 
@@ -41847,14 +41847,14 @@ var Webhooks = class {
 };
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+app@15.1.0/node_modules/@octokit/app/dist-node/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+app@15.1.1/node_modules/@octokit/app/dist-node/index.js
 // pkg/dist-src/index.js
 
 
 
 
 // pkg/dist-src/version.js
-var app_dist_node_VERSION = "15.1.0";
+var app_dist_node_VERSION = "15.1.1";
 
 // pkg/dist-src/webhooks.js
 
@@ -42125,11 +42125,14 @@ var App = class {
         clientSecret: options.oauth.clientSecret
       } : {}
     );
-    this.octokit = new Octokit({
+    const octokitOptions = {
       authStrategy: createAppAuth,
-      auth: authOptions,
-      log: options.log
-    });
+      auth: authOptions
+    };
+    if ("log" in options && typeof options.log !== "undefined") {
+      octokitOptions.log = options.log;
+    }
+    this.octokit = new Octokit(octokitOptions);
     this.log = Object.assign(
       {
         debug: () => {
@@ -42180,7 +42183,7 @@ var App = class {
 };
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/octokit@4.0.2/node_modules/octokit/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/octokit@4.0.3/node_modules/octokit/dist-bundle/index.js
 // pkg/dist-src/octokit.js
 
 
