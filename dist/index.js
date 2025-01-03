@@ -42252,7 +42252,7 @@ var dist = __nccwpck_require__(4708);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+tool-cache@2.0.1/node_modules/@actions/tool-cache/lib/tool-cache.js
 var tool_cache = __nccwpck_require__(8982);
 ;// CONCATENATED MODULE: ./src/download-and-cache.ts
-// Copyright 2021-2024 Zenauth Ltd.
+// Copyright 2021-2025 Zenauth Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 
@@ -42299,7 +42299,7 @@ async function downloadAndCache(url, version) {
 // EXTERNAL MODULE: external "os"
 var external_os_ = __nccwpck_require__(857);
 ;// CONCATENATED MODULE: ./src/get-running-environment.ts
-// Copyright 2021-2024 Zenauth Ltd.
+// Copyright 2021-2025 Zenauth Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 async function getRunningEnvironment() {
@@ -42332,7 +42332,7 @@ async function getRunningEnvironment() {
 /* harmony default export */ const get_running_environment = (getRunningEnvironment);
 
 ;// CONCATENATED MODULE: ./src/get-url-to-download.ts
-// Copyright 2021-2024 Zenauth Ltd.
+// Copyright 2021-2025 Zenauth Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 async function getURLToDownload(octokit, runningEnvironment, version) {
@@ -42355,7 +42355,7 @@ async function getURLToDownload(octokit, runningEnvironment, version) {
 /* harmony default export */ const get_url_to_download = (getURLToDownload);
 
 ;// CONCATENATED MODULE: ./src/get-version.ts
-// Copyright 2021-2024 Zenauth Ltd.
+// Copyright 2021-2025 Zenauth Ltd.
 // SPDX-License-Identifier: Apache-2.0
 async function getVersion(octokit, inputVersion) {
     if (inputVersion === '' || inputVersion === 'latest') {
@@ -42377,7 +42377,7 @@ async function getVersion(octokit, inputVersion) {
 /* harmony default export */ const get_version = (getVersion);
 
 ;// CONCATENATED MODULE: ./src/validate.ts
-// Copyright 2021-2024 Zenauth Ltd.
+// Copyright 2021-2025 Zenauth Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 async function validate(runningEnvironment) {
@@ -42403,7 +42403,7 @@ async function validate(runningEnvironment) {
 /* harmony default export */ const src_validate = (validate);
 
 ;// CONCATENATED MODULE: ./src/main.ts
-// Copyright 2021-2024 Zenauth Ltd.
+// Copyright 2021-2025 Zenauth Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 
