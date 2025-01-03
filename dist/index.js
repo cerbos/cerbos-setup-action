@@ -4074,7 +4074,7 @@ function _unique(values) {
 
 /***/ }),
 
-/***/ 8473:
+/***/ 5355:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -4146,7 +4146,7 @@ exports.req = req;
 
 /***/ }),
 
-/***/ 3583:
+/***/ 3690:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -4181,7 +4181,7 @@ exports.Agent = void 0;
 const net = __importStar(__nccwpck_require__(9278));
 const http = __importStar(__nccwpck_require__(8611));
 const https_1 = __nccwpck_require__(5692);
-__exportStar(__nccwpck_require__(8473), exports);
+__exportStar(__nccwpck_require__(5355), exports);
 const INTERNAL = Symbol('AgentBaseInternalState');
 class Agent extends http.Agent {
     constructor(opts) {
@@ -4284,8 +4284,13 @@ class Agent extends http.Agent {
             .then((socket) => {
             this.decrementSockets(name, fakeSocket);
             if (socket instanceof http.Agent) {
-                // @ts-expect-error `addRequest()` isn't defined in `@types/node`
-                return socket.addRequest(req, connectOpts);
+                try {
+                    // @ts-expect-error `addRequest()` isn't defined in `@types/node`
+                    return socket.addRequest(req, connectOpts);
+                }
+                catch (err) {
+                    return cb(err);
+                }
             }
             this[INTERNAL].currentSocket = socket;
             // @ts-expect-error `createSocket()` isn't defined in `@types/node`
@@ -6718,7 +6723,7 @@ module.exports = (flag, argv = process.argv) => {
 
 /***/ }),
 
-/***/ 4469:
+/***/ 4708:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -6754,10 +6759,21 @@ const net = __importStar(__nccwpck_require__(9278));
 const tls = __importStar(__nccwpck_require__(4756));
 const assert_1 = __importDefault(__nccwpck_require__(2613));
 const debug_1 = __importDefault(__nccwpck_require__(8441));
-const agent_base_1 = __nccwpck_require__(3583);
+const agent_base_1 = __nccwpck_require__(3690);
 const url_1 = __nccwpck_require__(7016);
-const parse_proxy_response_1 = __nccwpck_require__(1031);
+const parse_proxy_response_1 = __nccwpck_require__(4832);
 const debug = (0, debug_1.default)('https-proxy-agent');
+const setServernameFromNonIpHost = (options) => {
+    if (options.servername === undefined &&
+        options.host &&
+        !net.isIP(options.host)) {
+        return {
+            ...options,
+            servername: options.host,
+        };
+    }
+    return options;
+};
 /**
  * The `HttpsProxyAgent` implements an HTTP Agent subclass that connects to
  * the specified "HTTP(s) proxy server" in order to proxy HTTPS requests.
@@ -6805,11 +6821,7 @@ class HttpsProxyAgent extends agent_base_1.Agent {
         let socket;
         if (proxy.protocol === 'https:') {
             debug('Creating `tls.Socket`: %o', this.connectOpts);
-            const servername = this.connectOpts.servername || this.connectOpts.host;
-            socket = tls.connect({
-                ...this.connectOpts,
-                servername,
-            });
+            socket = tls.connect(setServernameFromNonIpHost(this.connectOpts));
         }
         else {
             debug('Creating `net.Socket`: %o', this.connectOpts);
@@ -6845,11 +6857,9 @@ class HttpsProxyAgent extends agent_base_1.Agent {
                 // The proxy is connecting to a TLS server, so upgrade
                 // this socket connection to a TLS connection.
                 debug('Upgrading socket connection to TLS');
-                const servername = opts.servername || opts.host;
                 return tls.connect({
-                    ...omit(opts, 'host', 'path', 'port'),
+                    ...omit(setServernameFromNonIpHost(opts), 'host', 'path', 'port'),
                     socket,
-                    servername,
                 });
             }
             return socket;
@@ -6899,7 +6909,7 @@ function omit(obj, ...keys) {
 
 /***/ }),
 
-/***/ 1031:
+/***/ 4832:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
@@ -42237,8 +42247,8 @@ var dist_bundle_App = App.defaults({ Octokit });
 var dist_bundle_OAuthApp = OAuthApp.defaults({ Octokit });
 
 
-// EXTERNAL MODULE: ./node_modules/.pnpm/https-proxy-agent@7.0.5/node_modules/https-proxy-agent/dist/index.js
-var dist = __nccwpck_require__(4469);
+// EXTERNAL MODULE: ./node_modules/.pnpm/https-proxy-agent@7.0.6/node_modules/https-proxy-agent/dist/index.js
+var dist = __nccwpck_require__(4708);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+tool-cache@2.0.1/node_modules/@actions/tool-cache/lib/tool-cache.js
 var tool_cache = __nccwpck_require__(8982);
 ;// CONCATENATED MODULE: ./src/download-and-cache.ts
