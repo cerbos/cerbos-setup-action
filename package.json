@@ -4,11 +4,11 @@
   "private": true,
   "description": "Cerbos Setup Action",
   "exports": "./lib/main.js",
-  "packageManager": "pnpm@9.12.1",
   "type": "module",
+  "packageManager": "pnpm@9.15.5",
   "engines": {
-    "node": "20.18.0",
-    "pnpm": "9.12.1"
+    "node": "20.18.2",
+    "pnpm": "9.15.5"
   },
   "scripts": {
     "build": "ncc build -o dist src/main.ts",
@@ -32,7 +32,7 @@
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/tool-cache": "^2.0.1",
-    "octokit": "^4.0.3",
+    "octokit": "^4.1.1",
     "https-proxy-agent": "^7.0.6"
   },
   "devDependencies": {
