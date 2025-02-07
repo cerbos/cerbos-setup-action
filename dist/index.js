@@ -15569,7 +15569,7 @@ module.exports = buildConnector
 
 /***/ }),
 
-/***/ 5707:
+/***/ 8088:
 /***/ ((module) => {
 
 
@@ -16521,7 +16521,7 @@ const { InvalidArgumentError } = __nccwpck_require__(3862)
 const { Blob } = __nccwpck_require__(181)
 const nodeUtil = __nccwpck_require__(9023)
 const { stringify } = __nccwpck_require__(3480)
-const { headerNameLowerCasedRecord } = __nccwpck_require__(5707)
+const { headerNameLowerCasedRecord } = __nccwpck_require__(8088)
 
 const [nodeMajor, nodeMinor] = process.versions.node.split('.').map(v => Number(v))
 
@@ -33256,6 +33256,183 @@ function parseParams (str) {
 module.exports = parseParams
 
 
+/***/ }),
+
+/***/ 654:
+/***/ ((module) => {
+
+var __webpack_unused_export__;
+
+
+const NullObject = function NullObject () { }
+NullObject.prototype = Object.create(null)
+
+/**
+ * RegExp to match *( ";" parameter ) in RFC 7231 sec 3.1.1.1
+ *
+ * parameter     = token "=" ( token / quoted-string )
+ * token         = 1*tchar
+ * tchar         = "!" / "#" / "$" / "%" / "&" / "'" / "*"
+ *               / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
+ *               / DIGIT / ALPHA
+ *               ; any VCHAR, except delimiters
+ * quoted-string = DQUOTE *( qdtext / quoted-pair ) DQUOTE
+ * qdtext        = HTAB / SP / %x21 / %x23-5B / %x5D-7E / obs-text
+ * obs-text      = %x80-FF
+ * quoted-pair   = "\" ( HTAB / SP / VCHAR / obs-text )
+ */
+const paramRE = /; *([!#$%&'*+.^\w`|~-]+)=("(?:[\v\u0020\u0021\u0023-\u005b\u005d-\u007e\u0080-\u00ff]|\\[\v\u0020-\u00ff])*"|[!#$%&'*+.^\w`|~-]+) */gu
+
+/**
+ * RegExp to match quoted-pair in RFC 7230 sec 3.2.6
+ *
+ * quoted-pair = "\" ( HTAB / SP / VCHAR / obs-text )
+ * obs-text    = %x80-FF
+ */
+const quotedPairRE = /\\([\v\u0020-\u00ff])/gu
+
+/**
+ * RegExp to match type in RFC 7231 sec 3.1.1.1
+ *
+ * media-type = type "/" subtype
+ * type       = token
+ * subtype    = token
+ */
+const mediaTypeRE = /^[!#$%&'*+.^\w|~-]+\/[!#$%&'*+.^\w|~-]+$/u
+
+// default ContentType to prevent repeated object creation
+const defaultContentType = { type: '', parameters: new NullObject() }
+Object.freeze(defaultContentType.parameters)
+Object.freeze(defaultContentType)
+
+/**
+ * Parse media type to object.
+ *
+ * @param {string|object} header
+ * @return {Object}
+ * @public
+ */
+
+function parse (header) {
+  if (typeof header !== 'string') {
+    throw new TypeError('argument header is required and must be a string')
+  }
+
+  let index = header.indexOf(';')
+  const type = index !== -1
+    ? header.slice(0, index).trim()
+    : header.trim()
+
+  if (mediaTypeRE.test(type) === false) {
+    throw new TypeError('invalid media type')
+  }
+
+  const result = {
+    type: type.toLowerCase(),
+    parameters: new NullObject()
+  }
+
+  // parse parameters
+  if (index === -1) {
+    return result
+  }
+
+  let key
+  let match
+  let value
+
+  paramRE.lastIndex = index
+
+  while ((match = paramRE.exec(header))) {
+    if (match.index !== index) {
+      throw new TypeError('invalid parameter format')
+    }
+
+    index += match[0].length
+    key = match[1].toLowerCase()
+    value = match[2]
+
+    if (value[0] === '"') {
+      // remove quotes and escapes
+      value = value
+        .slice(1, value.length - 1)
+
+      quotedPairRE.test(value) && (value = value.replace(quotedPairRE, '$1'))
+    }
+
+    result.parameters[key] = value
+  }
+
+  if (index !== header.length) {
+    throw new TypeError('invalid parameter format')
+  }
+
+  return result
+}
+
+function safeParse (header) {
+  if (typeof header !== 'string') {
+    return defaultContentType
+  }
+
+  let index = header.indexOf(';')
+  const type = index !== -1
+    ? header.slice(0, index).trim()
+    : header.trim()
+
+  if (mediaTypeRE.test(type) === false) {
+    return defaultContentType
+  }
+
+  const result = {
+    type: type.toLowerCase(),
+    parameters: new NullObject()
+  }
+
+  // parse parameters
+  if (index === -1) {
+    return result
+  }
+
+  let key
+  let match
+  let value
+
+  paramRE.lastIndex = index
+
+  while ((match = paramRE.exec(header))) {
+    if (match.index !== index) {
+      return defaultContentType
+    }
+
+    index += match[0].length
+    key = match[1].toLowerCase()
+    value = match[2]
+
+    if (value[0] === '"') {
+      // remove quotes and escapes
+      value = value
+        .slice(1, value.length - 1)
+
+      quotedPairRE.test(value) && (value = value.replace(quotedPairRE, '$1'))
+    }
+
+    result.parameters[key] = value
+  }
+
+  if (index !== header.length) {
+    return defaultContentType
+  }
+
+  return result
+}
+
+__webpack_unused_export__ = { parse, safeParse }
+__webpack_unused_export__ = parse
+module.exports.xL = safeParse
+__webpack_unused_export__ = defaultContentType
+
+
 /***/ })
 
 /******/ });
@@ -33460,7 +33637,7 @@ function Collection() {
 
 /* harmony default export */ const before_after_hook = ({ Singular, Collection });
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+endpoint@10.1.1/node_modules/@octokit/endpoint/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+endpoint@10.1.2/node_modules/@octokit/endpoint/dist-bundle/index.js
 // pkg/dist-src/defaults.js
 
 
@@ -33494,13 +33671,10 @@ function lowercaseKeys(object) {
 
 // pkg/dist-src/util/is-plain-object.js
 function isPlainObject(value) {
-  if (typeof value !== "object" || value === null)
-    return false;
-  if (Object.prototype.toString.call(value) !== "[object Object]")
-    return false;
+  if (typeof value !== "object" || value === null) return false;
+  if (Object.prototype.toString.call(value) !== "[object Object]") return false;
   const proto = Object.getPrototypeOf(value);
-  if (proto === null)
-    return true;
+  if (proto === null) return true;
   const Ctor = Object.prototype.hasOwnProperty.call(proto, "constructor") && proto.constructor;
   return typeof Ctor === "function" && Ctor instanceof Ctor && Function.prototype.call(Ctor) === Function.prototype.call(value);
 }
@@ -33510,10 +33684,8 @@ function mergeDeep(defaults, options) {
   const result = Object.assign({}, defaults);
   Object.keys(options).forEach((key) => {
     if (isPlainObject(options[key])) {
-      if (!(key in defaults))
-        Object.assign(result, { [key]: options[key] });
-      else
-        result[key] = mergeDeep(defaults[key], options[key]);
+      if (!(key in defaults)) Object.assign(result, { [key]: options[key] });
+      else result[key] = mergeDeep(defaults[key], options[key]);
     } else {
       Object.assign(result, { [key]: options[key] });
     }
@@ -33811,7 +33983,9 @@ function withDefaults(oldDefaults, newDefaults) {
 var endpoint = withDefaults(null, DEFAULTS);
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+request-error@6.1.5/node_modules/@octokit/request-error/dist-src/index.js
+// EXTERNAL MODULE: ./node_modules/.pnpm/fast-content-type-parse@2.0.1/node_modules/fast-content-type-parse/index.js
+var fast_content_type_parse = __nccwpck_require__(654);
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+request-error@6.1.6/node_modules/@octokit/request-error/dist-src/index.js
 class RequestError extends Error {
   name;
   /**
@@ -33851,7 +34025,7 @@ class RequestError extends Error {
 }
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+request@9.1.3/node_modules/@octokit/request/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+request@9.2.0/node_modules/@octokit/request/dist-bundle/index.js
 // pkg/dist-src/index.js
 
 
@@ -33867,6 +34041,9 @@ var defaults_default = {
     "user-agent": `octokit-request.js/${dist_bundle_VERSION} ${getUserAgent()}`
   }
 };
+
+// pkg/dist-src/fetch-wrapper.js
+
 
 // pkg/dist-src/is-plain-object.js
 function dist_bundle_isPlainObject(value) {
@@ -33980,13 +34157,26 @@ async function fetchWrapper(requestOptions) {
 }
 async function getResponseData(response) {
   const contentType = response.headers.get("content-type");
-  if (/application\/json/.test(contentType)) {
-    return response.json().catch(() => response.text()).catch(() => "");
+  if (!contentType) {
+    return response.text().catch(() => "");
   }
-  if (!contentType || /^text\/|charset=utf-8$/.test(contentType)) {
-    return response.text();
+  const mimetype = (0,fast_content_type_parse/* safeParse */.xL)(contentType);
+  if (isJSONResponse(mimetype)) {
+    let text = "";
+    try {
+      text = await response.text();
+      return JSON.parse(text);
+    } catch (err) {
+      return text;
+    }
+  } else if (mimetype.type.startsWith("text/") || mimetype.parameters.charset?.toLowerCase() === "utf-8") {
+    return response.text().catch(() => "");
+  } else {
+    return response.arrayBuffer().catch(() => new ArrayBuffer(0));
   }
-  return response.arrayBuffer();
+}
+function isJSONResponse(mimetype) {
+  return mimetype.type === "application/json" || mimetype.type === "application/scim+json";
 }
 function toErrorMessage(data) {
   if (typeof data === "string") {
@@ -34031,7 +34221,7 @@ function dist_bundle_withDefaults(oldEndpoint, newDefaults) {
 var dist_bundle_request = dist_bundle_withDefaults(endpoint, defaults_default);
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+graphql@8.1.1/node_modules/@octokit/graphql/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+graphql@8.2.0/node_modules/@octokit/graphql/dist-bundle/index.js
 // pkg/dist-src/index.js
 
 
@@ -34075,7 +34265,8 @@ var NON_VARIABLE_OPTIONS = [
   "headers",
   "request",
   "query",
-  "mediaType"
+  "mediaType",
+  "operationName"
 ];
 var FORBIDDEN_VARIABLE_OPTIONS = ["query", "method", "url"];
 var GHES_V3_SUFFIX_REGEX = /\/api\/v3\/?$/;
@@ -34087,8 +34278,7 @@ function graphql(request2, query, options) {
       );
     }
     for (const key in options) {
-      if (!FORBIDDEN_VARIABLE_OPTIONS.includes(key))
-        continue;
+      if (!FORBIDDEN_VARIABLE_OPTIONS.includes(key)) continue;
       return Promise.reject(
         new Error(
           `[@octokit/graphql] "${key}" cannot be used as variable name`
@@ -34158,15 +34348,18 @@ function withCustomRequest(customRequest) {
 }
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-token@5.1.1/node_modules/@octokit/auth-token/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-token@5.1.2/node_modules/@octokit/auth-token/dist-bundle/index.js
+// pkg/dist-src/is-jwt.js
+var b64url = "(?:[a-zA-Z0-9_-]+)";
+var sep = "\\.";
+var jwtRE = new RegExp(`^${b64url}${sep}${b64url}${sep}${b64url}$`);
+var isJWT = jwtRE.test.bind(jwtRE);
+
 // pkg/dist-src/auth.js
-var REGEX_IS_INSTALLATION_LEGACY = /^v1\./;
-var REGEX_IS_INSTALLATION = /^ghs_/;
-var REGEX_IS_USER_TO_SERVER = /^ghu_/;
 async function auth(token) {
-  const isApp = token.split(/\./).length === 3;
-  const isInstallation = REGEX_IS_INSTALLATION_LEGACY.test(token) || REGEX_IS_INSTALLATION.test(token);
-  const isUserToServer = REGEX_IS_USER_TO_SERVER.test(token);
+  const isApp = isJWT(token);
+  const isInstallation = token.startsWith("v1.") || token.startsWith("ghs_");
+  const isUserToServer = token.startsWith("ghu_");
   const tokenType = isApp ? "app" : isInstallation ? "installation" : isUserToServer ? "user-to-server" : "oauth";
   return {
     type: "token",
@@ -34210,11 +34403,11 @@ var createTokenAuth = function createTokenAuth2(token) {
 };
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+core@6.1.2/node_modules/@octokit/core/dist-src/version.js
-const version_VERSION = "6.1.2";
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+core@6.1.3/node_modules/@octokit/core/dist-src/version.js
+const version_VERSION = "6.1.3";
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+core@6.1.2/node_modules/@octokit/core/dist-src/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+core@6.1.3/node_modules/@octokit/core/dist-src/index.js
 
 
 
@@ -34348,7 +34541,7 @@ class dist_src_Octokit {
 }
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-paginate-rest@11.3.5_@octokit+core@6.1.2/node_modules/@octokit/plugin-paginate-rest/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-paginate-rest@11.4.0_@octokit+core@6.1.3/node_modules/@octokit/plugin-paginate-rest/dist-bundle/index.js
 // pkg/dist-src/version.js
 var plugin_paginate_rest_dist_bundle_VERSION = "0.0.0-development";
 
@@ -34461,7 +34654,8 @@ var paginatingEndpoints = (/* unused pure expression or super */ null && ([
   "GET /assignments/{assignment_id}/accepted_assignments",
   "GET /classrooms",
   "GET /classrooms/{classroom_id}/assignments",
-  "GET /enterprises/{enterprise}/copilot/usage",
+  "GET /enterprises/{enterprise}/code-security/configurations",
+  "GET /enterprises/{enterprise}/code-security/configurations/{configuration_id}/repositories",
   "GET /enterprises/{enterprise}/dependabot/alerts",
   "GET /enterprises/{enterprise}/secret-scanning/alerts",
   "GET /events",
@@ -34483,17 +34677,24 @@ var paginatingEndpoints = (/* unused pure expression or super */ null && ([
   "GET /organizations",
   "GET /orgs/{org}/actions/cache/usage-by-repository",
   "GET /orgs/{org}/actions/permissions/repositories",
+  "GET /orgs/{org}/actions/runner-groups",
+  "GET /orgs/{org}/actions/runner-groups/{runner_group_id}/repositories",
+  "GET /orgs/{org}/actions/runner-groups/{runner_group_id}/runners",
   "GET /orgs/{org}/actions/runners",
   "GET /orgs/{org}/actions/secrets",
   "GET /orgs/{org}/actions/secrets/{secret_name}/repositories",
   "GET /orgs/{org}/actions/variables",
   "GET /orgs/{org}/actions/variables/{name}/repositories",
+  "GET /orgs/{org}/attestations/{subject_digest}",
   "GET /orgs/{org}/blocks",
   "GET /orgs/{org}/code-scanning/alerts",
+  "GET /orgs/{org}/code-security/configurations",
+  "GET /orgs/{org}/code-security/configurations/{configuration_id}/repositories",
   "GET /orgs/{org}/codespaces",
   "GET /orgs/{org}/codespaces/secrets",
   "GET /orgs/{org}/codespaces/secrets/{secret_name}/repositories",
   "GET /orgs/{org}/copilot/billing/seats",
+  "GET /orgs/{org}/copilot/metrics",
   "GET /orgs/{org}/copilot/usage",
   "GET /orgs/{org}/dependabot/alerts",
   "GET /orgs/{org}/dependabot/secrets",
@@ -34502,6 +34703,9 @@ var paginatingEndpoints = (/* unused pure expression or super */ null && ([
   "GET /orgs/{org}/failed_invitations",
   "GET /orgs/{org}/hooks",
   "GET /orgs/{org}/hooks/{hook_id}/deliveries",
+  "GET /orgs/{org}/insights/api/route-stats/{actor_type}/{actor_id}",
+  "GET /orgs/{org}/insights/api/subject-stats",
+  "GET /orgs/{org}/insights/api/user-stats/{user_id}",
   "GET /orgs/{org}/installations",
   "GET /orgs/{org}/invitations",
   "GET /orgs/{org}/invitations/{invitation_id}/teams",
@@ -34519,6 +34723,7 @@ var paginatingEndpoints = (/* unused pure expression or super */ null && ([
   "GET /orgs/{org}/personal-access-token-requests/{pat_request_id}/repositories",
   "GET /orgs/{org}/personal-access-tokens",
   "GET /orgs/{org}/personal-access-tokens/{pat_id}/repositories",
+  "GET /orgs/{org}/private-registries",
   "GET /orgs/{org}/projects",
   "GET /orgs/{org}/properties/values",
   "GET /orgs/{org}/public_members",
@@ -34527,6 +34732,7 @@ var paginatingEndpoints = (/* unused pure expression or super */ null && ([
   "GET /orgs/{org}/rulesets/rule-suites",
   "GET /orgs/{org}/secret-scanning/alerts",
   "GET /orgs/{org}/security-advisories",
+  "GET /orgs/{org}/team/{team_slug}/copilot/metrics",
   "GET /orgs/{org}/team/{team_slug}/copilot/usage",
   "GET /orgs/{org}/teams",
   "GET /orgs/{org}/teams/{team_slug}/discussions",
@@ -34556,6 +34762,7 @@ var paginatingEndpoints = (/* unused pure expression or super */ null && ([
   "GET /repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs",
   "GET /repos/{owner}/{repo}/activity",
   "GET /repos/{owner}/{repo}/assignees",
+  "GET /repos/{owner}/{repo}/attestations/{subject_digest}",
   "GET /repos/{owner}/{repo}/branches",
   "GET /repos/{owner}/{repo}/check-runs/{check_run_id}/annotations",
   "GET /repos/{owner}/{repo}/check-suites/{check_suite_id}/check-runs",
@@ -34598,6 +34805,7 @@ var paginatingEndpoints = (/* unused pure expression or super */ null && ([
   "GET /repos/{owner}/{repo}/issues/{issue_number}/events",
   "GET /repos/{owner}/{repo}/issues/{issue_number}/labels",
   "GET /repos/{owner}/{repo}/issues/{issue_number}/reactions",
+  "GET /repos/{owner}/{repo}/issues/{issue_number}/sub_issues",
   "GET /repos/{owner}/{repo}/issues/{issue_number}/timeline",
   "GET /repos/{owner}/{repo}/keys",
   "GET /repos/{owner}/{repo}/labels",
@@ -34673,6 +34881,7 @@ var paginatingEndpoints = (/* unused pure expression or super */ null && ([
   "GET /user/subscriptions",
   "GET /user/teams",
   "GET /users",
+  "GET /users/{username}/attestations/{subject_digest}",
   "GET /users/{username}/events",
   "GET /users/{username}/events/orgs/{org}",
   "GET /users/{username}/events/public",
@@ -34713,7 +34922,7 @@ function paginateRest(octokit) {
 paginateRest.VERSION = plugin_paginate_rest_dist_bundle_VERSION;
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-paginate-graphql@5.2.3_@octokit+core@6.1.2/node_modules/@octokit/plugin-paginate-graphql/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-paginate-graphql@5.2.4_@octokit+core@6.1.3/node_modules/@octokit/plugin-paginate-graphql/dist-bundle/index.js
 // pkg/dist-src/errors.js
 var generateMessage = (path, cursorValue) => `The cursor at "${path.join(
   ","
@@ -34753,7 +34962,7 @@ function findPaginatedResourcePath(responseData) {
     responseData,
     "pageInfo"
   );
-  if (paginatedResourcePath === null || paginatedResourcePath.length === 0) {
+  if (paginatedResourcePath.length === 0) {
     throw new MissingPageInfo(responseData);
   }
   return paginatedResourcePath;
@@ -34762,10 +34971,10 @@ var deepFindPathToProperty = (object, searchProp, path = []) => {
   for (const key of Object.keys(object)) {
     const currentPath = [...path, key];
     const currentValue = object[key];
-    if (currentValue.hasOwnProperty(searchProp)) {
-      return currentPath;
-    }
     if (isObject(currentValue)) {
+      if (currentValue.hasOwnProperty(searchProp)) {
+        return currentPath;
+      }
       const result = deepFindPathToProperty(
         currentValue,
         searchProp,
@@ -34893,12 +35102,12 @@ function paginateGraphQL(octokit) {
 }
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-rest-endpoint-methods@13.2.6_@octokit+core@6.1.2/node_modules/@octokit/plugin-rest-endpoint-methods/dist-src/version.js
-const dist_src_version_VERSION = "13.2.6";
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-rest-endpoint-methods@13.3.0_@octokit+core@6.1.3/node_modules/@octokit/plugin-rest-endpoint-methods/dist-src/version.js
+const dist_src_version_VERSION = "13.3.0";
 
 //# sourceMappingURL=version.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-rest-endpoint-methods@13.2.6_@octokit+core@6.1.2/node_modules/@octokit/plugin-rest-endpoint-methods/dist-src/generated/endpoints.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-rest-endpoint-methods@13.3.0_@octokit+core@6.1.3/node_modules/@octokit/plugin-rest-endpoint-methods/dist-src/generated/endpoints.js
 const Endpoints = {
   actions: {
     addCustomLabelsToSelfHostedRunnerForOrg: [
@@ -34906,6 +35115,9 @@ const Endpoints = {
     ],
     addCustomLabelsToSelfHostedRunnerForRepo: [
       "POST /repos/{owner}/{repo}/actions/runners/{runner_id}/labels"
+    ],
+    addRepoAccessToSelfHostedRunnerGroupInOrg: [
+      "PUT /orgs/{org}/actions/runner-groups/{runner_group_id}/repositories/{repository_id}"
     ],
     addSelectedRepoToOrgSecret: [
       "PUT /orgs/{org}/actions/secrets/{secret_name}/repositories/{repository_id}"
@@ -35335,6 +35547,9 @@ const Endpoints = {
     getGithubActionsBillingUser: [
       "GET /users/{username}/settings/billing/actions"
     ],
+    getGithubBillingUsageReportOrg: [
+      "GET /organizations/{org}/settings/billing/usage"
+    ],
     getGithubPackagesBillingOrg: ["GET /orgs/{org}/settings/billing/packages"],
     getGithubPackagesBillingUser: [
       "GET /users/{username}/settings/billing/packages"
@@ -35371,8 +35586,20 @@ const Endpoints = {
     update: ["PATCH /repos/{owner}/{repo}/check-runs/{check_run_id}"]
   },
   codeScanning: {
+    commitAutofix: [
+      "POST /repos/{owner}/{repo}/code-scanning/alerts/{alert_number}/autofix/commits"
+    ],
+    createAutofix: [
+      "POST /repos/{owner}/{repo}/code-scanning/alerts/{alert_number}/autofix"
+    ],
+    createVariantAnalysis: [
+      "POST /repos/{owner}/{repo}/code-scanning/codeql/variant-analyses"
+    ],
     deleteAnalysis: [
       "DELETE /repos/{owner}/{repo}/code-scanning/analyses/{analysis_id}{?confirm_delete}"
+    ],
+    deleteCodeqlDatabase: [
+      "DELETE /repos/{owner}/{repo}/code-scanning/codeql/databases/{language}"
     ],
     getAlert: [
       "GET /repos/{owner}/{repo}/code-scanning/alerts/{alert_number}",
@@ -35382,11 +35609,20 @@ const Endpoints = {
     getAnalysis: [
       "GET /repos/{owner}/{repo}/code-scanning/analyses/{analysis_id}"
     ],
+    getAutofix: [
+      "GET /repos/{owner}/{repo}/code-scanning/alerts/{alert_number}/autofix"
+    ],
     getCodeqlDatabase: [
       "GET /repos/{owner}/{repo}/code-scanning/codeql/databases/{language}"
     ],
     getDefaultSetup: ["GET /repos/{owner}/{repo}/code-scanning/default-setup"],
     getSarif: ["GET /repos/{owner}/{repo}/code-scanning/sarifs/{sarif_id}"],
+    getVariantAnalysis: [
+      "GET /repos/{owner}/{repo}/code-scanning/codeql/variant-analyses/{codeql_variant_analysis_id}"
+    ],
+    getVariantAnalysisRepoTask: [
+      "GET /repos/{owner}/{repo}/code-scanning/codeql/variant-analyses/{codeql_variant_analysis_id}/repos/{repo_owner}/{repo_name}"
+    ],
     listAlertInstances: [
       "GET /repos/{owner}/{repo}/code-scanning/alerts/{alert_number}/instances"
     ],
@@ -35408,6 +35644,64 @@ const Endpoints = {
       "PATCH /repos/{owner}/{repo}/code-scanning/default-setup"
     ],
     uploadSarif: ["POST /repos/{owner}/{repo}/code-scanning/sarifs"]
+  },
+  codeSecurity: {
+    attachConfiguration: [
+      "POST /orgs/{org}/code-security/configurations/{configuration_id}/attach"
+    ],
+    attachEnterpriseConfiguration: [
+      "POST /enterprises/{enterprise}/code-security/configurations/{configuration_id}/attach"
+    ],
+    createConfiguration: ["POST /orgs/{org}/code-security/configurations"],
+    createConfigurationForEnterprise: [
+      "POST /enterprises/{enterprise}/code-security/configurations"
+    ],
+    deleteConfiguration: [
+      "DELETE /orgs/{org}/code-security/configurations/{configuration_id}"
+    ],
+    deleteConfigurationForEnterprise: [
+      "DELETE /enterprises/{enterprise}/code-security/configurations/{configuration_id}"
+    ],
+    detachConfiguration: [
+      "DELETE /orgs/{org}/code-security/configurations/detach"
+    ],
+    getConfiguration: [
+      "GET /orgs/{org}/code-security/configurations/{configuration_id}"
+    ],
+    getConfigurationForRepository: [
+      "GET /repos/{owner}/{repo}/code-security-configuration"
+    ],
+    getConfigurationsForEnterprise: [
+      "GET /enterprises/{enterprise}/code-security/configurations"
+    ],
+    getConfigurationsForOrg: ["GET /orgs/{org}/code-security/configurations"],
+    getDefaultConfigurations: [
+      "GET /orgs/{org}/code-security/configurations/defaults"
+    ],
+    getDefaultConfigurationsForEnterprise: [
+      "GET /enterprises/{enterprise}/code-security/configurations/defaults"
+    ],
+    getRepositoriesForConfiguration: [
+      "GET /orgs/{org}/code-security/configurations/{configuration_id}/repositories"
+    ],
+    getRepositoriesForEnterpriseConfiguration: [
+      "GET /enterprises/{enterprise}/code-security/configurations/{configuration_id}/repositories"
+    ],
+    getSingleConfigurationForEnterprise: [
+      "GET /enterprises/{enterprise}/code-security/configurations/{configuration_id}"
+    ],
+    setConfigurationAsDefault: [
+      "PUT /orgs/{org}/code-security/configurations/{configuration_id}/defaults"
+    ],
+    setConfigurationAsDefaultForEnterprise: [
+      "PUT /enterprises/{enterprise}/code-security/configurations/{configuration_id}/defaults"
+    ],
+    updateConfiguration: [
+      "PATCH /orgs/{org}/code-security/configurations/{configuration_id}"
+    ],
+    updateEnterpriseConfiguration: [
+      "PATCH /enterprises/{enterprise}/code-security/configurations/{configuration_id}"
+    ]
   },
   codesOfConduct: {
     getAllCodesOfConduct: ["GET /codes_of_conduct"],
@@ -35539,12 +35833,13 @@ const Endpoints = {
     cancelCopilotSeatAssignmentForUsers: [
       "DELETE /orgs/{org}/copilot/billing/selected_users"
     ],
+    copilotMetricsForOrganization: ["GET /orgs/{org}/copilot/metrics"],
+    copilotMetricsForTeam: ["GET /orgs/{org}/team/{team_slug}/copilot/metrics"],
     getCopilotOrganizationDetails: ["GET /orgs/{org}/copilot/billing"],
     getCopilotSeatDetailsForUser: [
       "GET /orgs/{org}/members/{username}/copilot"
     ],
     listCopilotSeats: ["GET /orgs/{org}/copilot/billing/seats"],
-    usageMetricsForEnterprise: ["GET /enterprises/{enterprise}/copilot/usage"],
     usageMetricsForOrg: ["GET /orgs/{org}/copilot/usage"],
     usageMetricsForTeam: ["GET /orgs/{org}/team/{team_slug}/copilot/usage"]
   },
@@ -35675,6 +35970,9 @@ const Endpoints = {
       "POST /repos/{owner}/{repo}/issues/{issue_number}/assignees"
     ],
     addLabels: ["POST /repos/{owner}/{repo}/issues/{issue_number}/labels"],
+    addSubIssue: [
+      "POST /repos/{owner}/{repo}/issues/{issue_number}/sub_issues"
+    ],
     checkUserCanBeAssigned: ["GET /repos/{owner}/{repo}/assignees/{assignee}"],
     checkUserCanBeAssignedToIssue: [
       "GET /repos/{owner}/{repo}/issues/{issue_number}/assignees/{assignee}"
@@ -35717,6 +36015,9 @@ const Endpoints = {
       "GET /repos/{owner}/{repo}/issues/{issue_number}/labels"
     ],
     listMilestones: ["GET /repos/{owner}/{repo}/milestones"],
+    listSubIssues: [
+      "GET /repos/{owner}/{repo}/issues/{issue_number}/sub_issues"
+    ],
     lock: ["PUT /repos/{owner}/{repo}/issues/{issue_number}/lock"],
     removeAllLabels: [
       "DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels"
@@ -35726,6 +36027,12 @@ const Endpoints = {
     ],
     removeLabel: [
       "DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}"
+    ],
+    removeSubIssue: [
+      "DELETE /repos/{owner}/{repo}/issues/{issue_number}/sub_issue"
+    ],
+    reprioritizeSubIssue: [
+      "PATCH /repos/{owner}/{repo}/issues/{issue_number}/sub_issues/priority"
     ],
     setLabels: ["PUT /repos/{owner}/{repo}/issues/{issue_number}/labels"],
     unlock: ["DELETE /repos/{owner}/{repo}/issues/{issue_number}/lock"],
@@ -35800,7 +36107,11 @@ const Endpoints = {
   },
   orgs: {
     addSecurityManagerTeam: [
-      "PUT /orgs/{org}/security-managers/teams/{team_slug}"
+      "PUT /orgs/{org}/security-managers/teams/{team_slug}",
+      {},
+      {
+        deprecated: "octokit.rest.orgs.addSecurityManagerTeam() is deprecated, see https://docs.github.com/rest/orgs/security-managers#add-a-security-manager-team"
+      }
     ],
     assignTeamToOrgRole: [
       "PUT /orgs/{org}/organization-roles/teams/{team_slug}/{role_id}"
@@ -35816,7 +36127,6 @@ const Endpoints = {
     convertMemberToOutsideCollaborator: [
       "PUT /orgs/{org}/outside_collaborators/{username}"
     ],
-    createCustomOrganizationRole: ["POST /orgs/{org}/organization-roles"],
     createInvitation: ["POST /orgs/{org}/invitations"],
     createOrUpdateCustomProperties: ["PATCH /orgs/{org}/properties/schema"],
     createOrUpdateCustomPropertiesValuesForRepos: [
@@ -35827,12 +36137,13 @@ const Endpoints = {
     ],
     createWebhook: ["POST /orgs/{org}/hooks"],
     delete: ["DELETE /orgs/{org}"],
-    deleteCustomOrganizationRole: [
-      "DELETE /orgs/{org}/organization-roles/{role_id}"
-    ],
     deleteWebhook: ["DELETE /orgs/{org}/hooks/{hook_id}"],
     enableOrDisableSecurityProductOnAllOrgRepos: [
-      "POST /orgs/{org}/{security_product}/{enablement}"
+      "POST /orgs/{org}/{security_product}/{enablement}",
+      {},
+      {
+        deprecated: "octokit.rest.orgs.enableOrDisableSecurityProductOnAllOrgRepos() is deprecated, see https://docs.github.com/rest/orgs/orgs#enable-or-disable-a-security-feature-for-an-organization"
+      }
     ],
     get: ["GET /orgs/{org}"],
     getAllCustomProperties: ["GET /orgs/{org}/properties/schema"],
@@ -35849,6 +36160,7 @@ const Endpoints = {
     ],
     list: ["GET /organizations"],
     listAppInstallations: ["GET /orgs/{org}/installations"],
+    listAttestations: ["GET /orgs/{org}/attestations/{subject_digest}"],
     listBlockedUsers: ["GET /orgs/{org}/blocks"],
     listCustomPropertiesValuesForRepos: ["GET /orgs/{org}/properties/values"],
     listFailedInvitations: ["GET /orgs/{org}/failed_invitations"],
@@ -35874,12 +36186,15 @@ const Endpoints = {
     listPatGrants: ["GET /orgs/{org}/personal-access-tokens"],
     listPendingInvitations: ["GET /orgs/{org}/invitations"],
     listPublicMembers: ["GET /orgs/{org}/public_members"],
-    listSecurityManagerTeams: ["GET /orgs/{org}/security-managers"],
+    listSecurityManagerTeams: [
+      "GET /orgs/{org}/security-managers",
+      {},
+      {
+        deprecated: "octokit.rest.orgs.listSecurityManagerTeams() is deprecated, see https://docs.github.com/rest/orgs/security-managers#list-security-manager-teams"
+      }
+    ],
     listWebhookDeliveries: ["GET /orgs/{org}/hooks/{hook_id}/deliveries"],
     listWebhooks: ["GET /orgs/{org}/hooks"],
-    patchCustomOrganizationRole: [
-      "PATCH /orgs/{org}/organization-roles/{role_id}"
-    ],
     pingWebhook: ["POST /orgs/{org}/hooks/{hook_id}/pings"],
     redeliverWebhookDelivery: [
       "POST /orgs/{org}/hooks/{hook_id}/deliveries/{delivery_id}/attempts"
@@ -35896,7 +36211,11 @@ const Endpoints = {
       "DELETE /orgs/{org}/public_members/{username}"
     ],
     removeSecurityManagerTeam: [
-      "DELETE /orgs/{org}/security-managers/teams/{team_slug}"
+      "DELETE /orgs/{org}/security-managers/teams/{team_slug}",
+      {},
+      {
+        deprecated: "octokit.rest.orgs.removeSecurityManagerTeam() is deprecated, see https://docs.github.com/rest/orgs/security-managers#remove-a-security-manager-team"
+      }
     ],
     reviewPatGrantRequest: [
       "POST /orgs/{org}/personal-access-token-requests/{pat_request_id}"
@@ -36020,6 +36339,18 @@ const Endpoints = {
     ],
     restorePackageVersionForUser: [
       "POST /users/{username}/packages/{package_type}/{package_name}/versions/{package_version_id}/restore"
+    ]
+  },
+  privateRegistries: {
+    createOrgPrivateRegistry: ["POST /orgs/{org}/private-registries"],
+    deleteOrgPrivateRegistry: [
+      "DELETE /orgs/{org}/private-registries/{secret_name}"
+    ],
+    getOrgPrivateRegistry: ["GET /orgs/{org}/private-registries/{secret_name}"],
+    getOrgPublicKey: ["GET /orgs/{org}/private-registries/public-key"],
+    listOrgPrivateRegistries: ["GET /orgs/{org}/private-registries"],
+    updateOrgPrivateRegistry: [
+      "PATCH /orgs/{org}/private-registries/{secret_name}"
     ]
   },
   projects: {
@@ -36224,6 +36555,7 @@ const Endpoints = {
     compareCommitsWithBasehead: [
       "GET /repos/{owner}/{repo}/compare/{basehead}"
     ],
+    createAttestation: ["POST /repos/{owner}/{repo}/attestations"],
     createAutolink: ["POST /repos/{owner}/{repo}/autolinks"],
     createCommitComment: [
       "POST /repos/{owner}/{repo}/commits/{commit_sha}/comments"
@@ -36259,7 +36591,6 @@ const Endpoints = {
     createPagesSite: ["POST /repos/{owner}/{repo}/pages"],
     createRelease: ["POST /repos/{owner}/{repo}/releases"],
     createRepoRuleset: ["POST /repos/{owner}/{repo}/rulesets"],
-    createTagProtection: ["POST /repos/{owner}/{repo}/tags/protection"],
     createUsingTemplate: [
       "POST /repos/{template_owner}/{template_repo}/generate"
     ],
@@ -36311,9 +36642,6 @@ const Endpoints = {
       "DELETE /repos/{owner}/{repo}/releases/assets/{asset_id}"
     ],
     deleteRepoRuleset: ["DELETE /repos/{owner}/{repo}/rulesets/{ruleset_id}"],
-    deleteTagProtection: [
-      "DELETE /repos/{owner}/{repo}/tags/protection/{tag_protection_id}"
-    ],
     deleteWebhook: ["DELETE /repos/{owner}/{repo}/hooks/{hook_id}"],
     disableAutomatedSecurityFixes: [
       "DELETE /repos/{owner}/{repo}/automated-security-fixes"
@@ -36448,6 +36776,9 @@ const Endpoints = {
       "GET /repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}"
     ],
     listActivities: ["GET /repos/{owner}/{repo}/activity"],
+    listAttestations: [
+      "GET /repos/{owner}/{repo}/attestations/{subject_digest}"
+    ],
     listAutolinks: ["GET /repos/{owner}/{repo}/autolinks"],
     listBranches: ["GET /repos/{owner}/{repo}/branches"],
     listBranchesForHeadCommit: [
@@ -36490,7 +36821,6 @@ const Endpoints = {
       "GET /repos/{owner}/{repo}/releases/{release_id}/assets"
     ],
     listReleases: ["GET /repos/{owner}/{repo}/releases"],
-    listTagProtection: ["GET /repos/{owner}/{repo}/tags/protection"],
     listTags: ["GET /repos/{owner}/{repo}/tags"],
     listTeams: ["GET /repos/{owner}/{repo}/teams"],
     listWebhookDeliveries: [
@@ -36605,9 +36935,13 @@ const Endpoints = {
     users: ["GET /search/users"]
   },
   secretScanning: {
+    createPushProtectionBypass: [
+      "POST /repos/{owner}/{repo}/secret-scanning/push-protection-bypasses"
+    ],
     getAlert: [
       "GET /repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}"
     ],
+    getScanHistory: ["GET /repos/{owner}/{repo}/secret-scanning/scan-history"],
     listAlertsForEnterprise: [
       "GET /enterprises/{enterprise}/secret-scanning/alerts"
     ],
@@ -36761,6 +37095,7 @@ const Endpoints = {
     ],
     follow: ["PUT /user/following/{username}"],
     getAuthenticated: ["GET /user"],
+    getById: ["GET /user/{account_id}"],
     getByUsername: ["GET /users/{username}"],
     getContextForUser: ["GET /users/{username}/hovercard"],
     getGpgKeyForAuthenticated: [
@@ -36779,6 +37114,7 @@ const Endpoints = {
       "GET /user/ssh_signing_keys/{ssh_signing_key_id}"
     ],
     list: ["GET /users"],
+    listAttestations: ["GET /users/{username}/attestations/{subject_digest}"],
     listBlockedByAuthenticated: [
       "GET /user/blocks",
       {},
@@ -36841,7 +37177,7 @@ var endpoints_default = Endpoints;
 
 //# sourceMappingURL=endpoints.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-rest-endpoint-methods@13.2.6_@octokit+core@6.1.2/node_modules/@octokit/plugin-rest-endpoint-methods/dist-src/endpoints-to-methods.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-rest-endpoint-methods@13.3.0_@octokit+core@6.1.3/node_modules/@octokit/plugin-rest-endpoint-methods/dist-src/endpoints-to-methods.js
 
 const endpointMethodsMap = /* @__PURE__ */ new Map();
 for (const [scope, endpoints] of Object.entries(endpoints_default)) {
@@ -36967,7 +37303,7 @@ function decorate(octokit, scope, methodName, defaults, decorations) {
 
 //# sourceMappingURL=endpoints-to-methods.js.map
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-rest-endpoint-methods@13.2.6_@octokit+core@6.1.2/node_modules/@octokit/plugin-rest-endpoint-methods/dist-src/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-rest-endpoint-methods@13.3.0_@octokit+core@6.1.3/node_modules/@octokit/plugin-rest-endpoint-methods/dist-src/index.js
 
 
 function restEndpointMethods(octokit) {
@@ -36990,7 +37326,7 @@ legacyRestEndpointMethods.VERSION = dist_src_version_VERSION;
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/bottleneck@2.19.5/node_modules/bottleneck/light.js
 var light = __nccwpck_require__(7447);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-retry@7.1.2_@octokit+core@6.1.2/node_modules/@octokit/plugin-retry/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-retry@7.1.3_@octokit+core@6.1.3/node_modules/@octokit/plugin-retry/dist-bundle/index.js
 // pkg/dist-src/version.js
 var plugin_retry_dist_bundle_VERSION = "0.0.0-development";
 
@@ -37069,7 +37405,7 @@ function retry(octokit, octokitOptions) {
 retry.VERSION = plugin_retry_dist_bundle_VERSION;
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-throttling@9.3.2_@octokit+core@6.1.2/node_modules/@octokit/plugin-throttling/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+plugin-throttling@9.4.0_@octokit+core@6.1.3/node_modules/@octokit/plugin-throttling/dist-bundle/index.js
 // pkg/dist-src/index.js
 
 
@@ -37124,6 +37460,8 @@ var triggers_notification_paths_default = [
   "/repos/{owner}/{repo}/commits/{commit_sha}/comments",
   "/repos/{owner}/{repo}/issues",
   "/repos/{owner}/{repo}/issues/{issue_number}/comments",
+  "/repos/{owner}/{repo}/issues/{issue_number}/sub_issue",
+  "/repos/{owner}/{repo}/issues/{issue_number}/sub_issues/priority",
   "/repos/{owner}/{repo}/pulls",
   "/repos/{owner}/{repo}/pulls/{pull_number}/comments",
   "/repos/{owner}/{repo}/pulls/{pull_number}/comments/{comment_id}/replies",
@@ -37326,7 +37664,7 @@ function urlBuilderAuthorize(base, options) {
 }
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+oauth-methods@5.1.2/node_modules/@octokit/oauth-methods/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+oauth-methods@5.1.3/node_modules/@octokit/oauth-methods/dist-bundle/index.js
 // pkg/dist-src/version.js
 var oauth_methods_dist_bundle_VERSION = "0.0.0-development";
 
@@ -37642,7 +37980,7 @@ async function deleteAuthorization(options) {
 }
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-oauth-device@7.1.1/node_modules/@octokit/auth-oauth-device/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-oauth-device@7.1.2/node_modules/@octokit/auth-oauth-device/dist-bundle/index.js
 // pkg/dist-src/index.js
 
 
@@ -37651,8 +37989,7 @@ async function deleteAuthorization(options) {
 
 async function getOAuthAccessToken(state, options) {
   const cachedAuthentication = getCachedAuthentication(state, options.auth);
-  if (cachedAuthentication)
-    return cachedAuthentication;
+  if (cachedAuthentication) return cachedAuthentication;
   const { data: verification } = await createDeviceCode({
     clientType: state.clientType,
     clientId: state.clientId,
@@ -37671,10 +38008,8 @@ async function getOAuthAccessToken(state, options) {
   return authentication;
 }
 function getCachedAuthentication(state, auth2) {
-  if (auth2.refresh === true)
-    return false;
-  if (!state.authentication)
-    return false;
+  if (auth2.refresh === true) return false;
+  if (!state.authentication) return false;
   if (state.clientType === "github-app") {
     return state.authentication;
   }
@@ -37708,8 +38043,7 @@ async function waitForAccessToken(request, clientId, clientType, verification) {
       ...authentication
     };
   } catch (error) {
-    if (!error.response)
-      throw error;
+    if (!error.response) throw error;
     const errorType = error.response.data.error;
     if (errorType === "authorization_pending") {
       await wait(verification.interval);
@@ -37784,7 +38118,7 @@ function createOAuthDeviceAuth(options) {
 }
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-oauth-user@5.1.1/node_modules/@octokit/auth-oauth-user/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-oauth-user@5.1.2/node_modules/@octokit/auth-oauth-user/dist-bundle/index.js
 // pkg/dist-src/index.js
 
 
@@ -37923,8 +38257,7 @@ async function auth_oauth_user_dist_bundle_auth(state, options = {}) {
         request: state.request
       });
     } catch (error) {
-      if (error.status !== 404)
-        throw error;
+      if (error.status !== 404) throw error;
     }
     state.authentication.invalid = true;
     return state.authentication;
@@ -37986,7 +38319,7 @@ function createOAuthUserAuth({
 createOAuthUserAuth.VERSION = auth_oauth_user_dist_bundle_VERSION;
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-oauth-app@8.1.1/node_modules/@octokit/auth-oauth-app/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-oauth-app@8.1.2/node_modules/@octokit/auth-oauth-app/dist-bundle/index.js
 // pkg/dist-src/index.js
 
 
@@ -38050,8 +38383,7 @@ async function auth_oauth_app_dist_bundle_hook(state, request2, route, parameter
   try {
     return await request2(endpoint);
   } catch (error) {
-    if (error.status !== 401)
-      throw error;
+    if (error.status !== 401) throw error;
     error.message = `[@octokit/auth-oauth-app] "${endpoint.method} ${endpoint.url}" does not support clientId/clientSecret basic authentication.`;
     throw error;
   }
@@ -38291,1550 +38623,860 @@ async function githubAppJwt({
   };
 }
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/lru-cache@10.4.3/node_modules/lru-cache/dist/esm/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/toad-cache@3.7.0/node_modules/toad-cache/dist/toad-cache.mjs
 /**
- * @module LRUCache
+ * toad-cache
+ *
+ * @copyright 2024 Igor Savin <kibertoad@gmail.com>
+ * @license MIT
+ * @version 3.7.0
  */
-const perf = typeof performance === 'object' &&
-    performance &&
-    typeof performance.now === 'function'
-    ? performance
-    : Date;
-const warned = new Set();
-/* c8 ignore start */
-const PROCESS = (typeof process === 'object' && !!process ? process : {});
-/* c8 ignore start */
-const emitWarning = (msg, type, code, fn) => {
-    typeof PROCESS.emitWarning === 'function'
-        ? PROCESS.emitWarning(msg, type, code, fn)
-        : console.error(`[${code}] ${type}: ${msg}`);
-};
-let AC = globalThis.AbortController;
-let AS = globalThis.AbortSignal;
-/* c8 ignore start */
-if (typeof AC === 'undefined') {
-    //@ts-ignore
-    AS = class AbortSignal {
-        onabort;
-        _onabort = [];
-        reason;
-        aborted = false;
-        addEventListener(_, fn) {
-            this._onabort.push(fn);
-        }
+class FifoMap {
+  constructor(max = 1000, ttlInMsecs = 0) {
+    if (isNaN(max) || max < 0) {
+      throw new Error('Invalid max value')
+    }
+
+    if (isNaN(ttlInMsecs) || ttlInMsecs < 0) {
+      throw new Error('Invalid ttl value')
+    }
+
+    this.first = null;
+    this.items = new Map();
+    this.last = null;
+    this.max = max;
+    this.ttl = ttlInMsecs;
+  }
+
+  get size() {
+    return this.items.size
+  }
+
+  clear() {
+    this.items = new Map();
+    this.first = null;
+    this.last = null;
+  }
+
+  delete(key) {
+    if (this.items.has(key)) {
+      const deletedItem = this.items.get(key);
+
+      this.items.delete(key);
+
+      if (deletedItem.prev !== null) {
+        deletedItem.prev.next = deletedItem.next;
+      }
+
+      if (deletedItem.next !== null) {
+        deletedItem.next.prev = deletedItem.prev;
+      }
+
+      if (this.first === deletedItem) {
+        this.first = deletedItem.next;
+      }
+
+      if (this.last === deletedItem) {
+        this.last = deletedItem.prev;
+      }
+    }
+  }
+
+  deleteMany(keys) {
+    for (var i = 0; i < keys.length; i++) {
+      this.delete(keys[i]);
+    }
+  }
+
+  evict() {
+    if (this.size > 0) {
+      const item = this.first;
+
+      this.items.delete(item.key);
+
+      if (this.size === 0) {
+        this.first = null;
+        this.last = null;
+      } else {
+        this.first = item.next;
+        this.first.prev = null;
+      }
+    }
+  }
+
+  expiresAt(key) {
+    if (this.items.has(key)) {
+      return this.items.get(key).expiry
+    }
+  }
+
+  get(key) {
+    if (this.items.has(key)) {
+      const item = this.items.get(key);
+
+      if (this.ttl > 0 && item.expiry <= Date.now()) {
+        this.delete(key);
+        return
+      }
+
+      return item.value
+    }
+  }
+
+  getMany(keys) {
+    const result = [];
+
+    for (var i = 0; i < keys.length; i++) {
+      result.push(this.get(keys[i]));
+    }
+
+    return result
+  }
+
+  keys() {
+    return this.items.keys()
+  }
+
+  set(key, value) {
+    // Replace existing item
+    if (this.items.has(key)) {
+      const item = this.items.get(key);
+      item.value = value;
+
+      item.expiry = this.ttl > 0 ? Date.now() + this.ttl : this.ttl;
+
+      return
+    }
+
+    // Add new item
+    if (this.max > 0 && this.size === this.max) {
+      this.evict();
+    }
+
+    const item = {
+      expiry: this.ttl > 0 ? Date.now() + this.ttl : this.ttl,
+      key: key,
+      prev: this.last,
+      next: null,
+      value,
     };
-    //@ts-ignore
-    AC = class AbortController {
-        constructor() {
-            warnACPolyfill();
-        }
-        signal = new AS();
-        abort(reason) {
-            if (this.signal.aborted)
-                return;
-            //@ts-ignore
-            this.signal.reason = reason;
-            //@ts-ignore
-            this.signal.aborted = true;
-            //@ts-ignore
-            for (const fn of this.signal._onabort) {
-                fn(reason);
-            }
-            this.signal.onabort?.(reason);
-        }
+    this.items.set(key, item);
+
+    if (this.size === 1) {
+      this.first = item;
+    } else {
+      this.last.next = item;
+    }
+
+    this.last = item;
+  }
+}class LruMap {
+  constructor(max = 1000, ttlInMsecs = 0) {
+    if (isNaN(max) || max < 0) {
+      throw new Error('Invalid max value')
+    }
+
+    if (isNaN(ttlInMsecs) || ttlInMsecs < 0) {
+      throw new Error('Invalid ttl value')
+    }
+
+    this.first = null;
+    this.items = new Map();
+    this.last = null;
+    this.max = max;
+    this.ttl = ttlInMsecs;
+  }
+
+  get size() {
+    return this.items.size
+  }
+
+  bumpLru(item) {
+    if (this.last === item) {
+      return // Item is already the last one, no need to bump
+    }
+
+    const last = this.last;
+    const next = item.next;
+    const prev = item.prev;
+
+    if (this.first === item) {
+      this.first = next;
+    }
+
+    item.next = null;
+    item.prev = last;
+    last.next = item;
+
+    if (prev !== null) {
+      prev.next = next;
+    }
+
+    if (next !== null) {
+      next.prev = prev;
+    }
+
+    this.last = item;
+  }
+
+  clear() {
+    this.items = new Map();
+    this.first = null;
+    this.last = null;
+  }
+
+  delete(key) {
+    if (this.items.has(key)) {
+      const item = this.items.get(key);
+
+      this.items.delete(key);
+
+      if (item.prev !== null) {
+        item.prev.next = item.next;
+      }
+
+      if (item.next !== null) {
+        item.next.prev = item.prev;
+      }
+
+      if (this.first === item) {
+        this.first = item.next;
+      }
+
+      if (this.last === item) {
+        this.last = item.prev;
+      }
+    }
+  }
+
+  deleteMany(keys) {
+    for (var i = 0; i < keys.length; i++) {
+      this.delete(keys[i]);
+    }
+  }
+
+  evict() {
+    if (this.size > 0) {
+      const item = this.first;
+
+      this.items.delete(item.key);
+
+      if (this.size === 0) {
+        this.first = null;
+        this.last = null;
+      } else {
+        this.first = item.next;
+        this.first.prev = null;
+      }
+    }
+  }
+
+  expiresAt(key) {
+    if (this.items.has(key)) {
+      return this.items.get(key).expiry
+    }
+  }
+
+  get(key) {
+    if (this.items.has(key)) {
+      const item = this.items.get(key);
+
+      // Item has already expired
+      if (this.ttl > 0 && item.expiry <= Date.now()) {
+        this.delete(key);
+        return
+      }
+
+      // Item is still fresh
+      this.bumpLru(item);
+      return item.value
+    }
+  }
+
+  getMany(keys) {
+    const result = [];
+
+    for (var i = 0; i < keys.length; i++) {
+      result.push(this.get(keys[i]));
+    }
+
+    return result
+  }
+
+  keys() {
+    return this.items.keys()
+  }
+
+  set(key, value) {
+    // Replace existing item
+    if (this.items.has(key)) {
+      const item = this.items.get(key);
+      item.value = value;
+
+      item.expiry = this.ttl > 0 ? Date.now() + this.ttl : this.ttl;
+
+      if (this.last !== item) {
+        this.bumpLru(item);
+      }
+
+      return
+    }
+
+    // Add new item
+    if (this.max > 0 && this.size === this.max) {
+      this.evict();
+    }
+
+    const item = {
+      expiry: this.ttl > 0 ? Date.now() + this.ttl : this.ttl,
+      key: key,
+      prev: this.last,
+      next: null,
+      value,
     };
-    let printACPolyfillWarning = PROCESS.env?.LRU_CACHE_IGNORE_AC_WARNING !== '1';
-    const warnACPolyfill = () => {
-        if (!printACPolyfillWarning)
-            return;
-        printACPolyfillWarning = false;
-        emitWarning('AbortController is not defined. If using lru-cache in ' +
-            'node 14, load an AbortController polyfill from the ' +
-            '`node-abort-controller` package. A minimal polyfill is ' +
-            'provided for use by LRUCache.fetch(), but it should not be ' +
-            'relied upon in other contexts (eg, passing it to other APIs that ' +
-            'use AbortController/AbortSignal might have undesirable effects). ' +
-            'You may disable this with LRU_CACHE_IGNORE_AC_WARNING=1 in the env.', 'NO_ABORT_CONTROLLER', 'ENOTSUP', warnACPolyfill);
+    this.items.set(key, item);
+
+    if (this.size === 1) {
+      this.first = item;
+    } else {
+      this.last.next = item;
+    }
+
+    this.last = item;
+  }
+}class LruObject {
+  constructor(max = 1000, ttlInMsecs = 0) {
+    if (isNaN(max) || max < 0) {
+      throw new Error('Invalid max value')
+    }
+
+    if (isNaN(ttlInMsecs) || ttlInMsecs < 0) {
+      throw new Error('Invalid ttl value')
+    }
+
+    this.first = null;
+    this.items = Object.create(null);
+    this.last = null;
+    this.size = 0;
+    this.max = max;
+    this.ttl = ttlInMsecs;
+  }
+
+  bumpLru(item) {
+    if (this.last === item) {
+      return // Item is already the last one, no need to bump
+    }
+
+    const last = this.last;
+    const next = item.next;
+    const prev = item.prev;
+
+    if (this.first === item) {
+      this.first = next;
+    }
+
+    item.next = null;
+    item.prev = last;
+    last.next = item;
+
+    if (prev !== null) {
+      prev.next = next;
+    }
+
+    if (next !== null) {
+      next.prev = prev;
+    }
+
+    this.last = item;
+  }
+
+  clear() {
+    this.items = Object.create(null);
+    this.first = null;
+    this.last = null;
+    this.size = 0;
+  }
+
+  delete(key) {
+    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
+      const item = this.items[key];
+
+      delete this.items[key];
+      this.size--;
+
+      if (item.prev !== null) {
+        item.prev.next = item.next;
+      }
+
+      if (item.next !== null) {
+        item.next.prev = item.prev;
+      }
+
+      if (this.first === item) {
+        this.first = item.next;
+      }
+
+      if (this.last === item) {
+        this.last = item.prev;
+      }
+    }
+  }
+
+  deleteMany(keys) {
+    for (var i = 0; i < keys.length; i++) {
+      this.delete(keys[i]);
+    }
+  }
+
+  evict() {
+    if (this.size > 0) {
+      const item = this.first;
+
+      delete this.items[item.key];
+
+      if (--this.size === 0) {
+        this.first = null;
+        this.last = null;
+      } else {
+        this.first = item.next;
+        this.first.prev = null;
+      }
+    }
+  }
+
+  expiresAt(key) {
+    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
+      return this.items[key].expiry
+    }
+  }
+
+  get(key) {
+    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
+      const item = this.items[key];
+
+      // Item has already expired
+      if (this.ttl > 0 && item.expiry <= Date.now()) {
+        this.delete(key);
+        return
+      }
+
+      // Item is still fresh
+      this.bumpLru(item);
+      return item.value
+    }
+  }
+
+  getMany(keys) {
+    const result = [];
+
+    for (var i = 0; i < keys.length; i++) {
+      result.push(this.get(keys[i]));
+    }
+
+    return result
+  }
+
+  keys() {
+    return Object.keys(this.items)
+  }
+
+  set(key, value) {
+    // Replace existing item
+    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
+      const item = this.items[key];
+      item.value = value;
+
+      item.expiry = this.ttl > 0 ? Date.now() + this.ttl : this.ttl;
+
+      if (this.last !== item) {
+        this.bumpLru(item);
+      }
+
+      return
+    }
+
+    // Add new item
+    if (this.max > 0 && this.size === this.max) {
+      this.evict();
+    }
+
+    const item = {
+      expiry: this.ttl > 0 ? Date.now() + this.ttl : this.ttl,
+      key: key,
+      prev: this.last,
+      next: null,
+      value,
     };
-}
-/* c8 ignore stop */
-const shouldWarn = (code) => !warned.has(code);
-const TYPE = Symbol('type');
-const isPosInt = (n) => n && n === Math.floor(n) && n > 0 && isFinite(n);
-/* c8 ignore start */
-// This is a little bit ridiculous, tbh.
-// The maximum array length is 2^32-1 or thereabouts on most JS impls.
-// And well before that point, you're caching the entire world, I mean,
-// that's ~32GB of just integers for the next/prev links, plus whatever
-// else to hold that many keys and values.  Just filling the memory with
-// zeroes at init time is brutal when you get that big.
-// But why not be complete?
-// Maybe in the future, these limits will have expanded.
-const getUintArray = (max) => !isPosInt(max)
-    ? null
-    : max <= Math.pow(2, 8)
-        ? Uint8Array
-        : max <= Math.pow(2, 16)
-            ? Uint16Array
-            : max <= Math.pow(2, 32)
-                ? Uint32Array
-                : max <= Number.MAX_SAFE_INTEGER
-                    ? ZeroArray
-                    : null;
-/* c8 ignore stop */
-class ZeroArray extends Array {
-    constructor(size) {
-        super(size);
-        this.fill(0);
+    this.items[key] = item;
+
+    if (++this.size === 1) {
+      this.first = item;
+    } else {
+      this.last.next = item;
     }
-}
-class Stack {
-    heap;
-    length;
-    // private constructor
-    static #constructing = false;
-    static create(max) {
-        const HeapCls = getUintArray(max);
-        if (!HeapCls)
-            return [];
-        Stack.#constructing = true;
-        const s = new Stack(max, HeapCls);
-        Stack.#constructing = false;
-        return s;
+
+    this.last = item;
+  }
+}class HitStatisticsRecord {
+  constructor() {
+    this.records = {};
+  }
+
+  initForCache(cacheId, currentTimeStamp) {
+    this.records[cacheId] = {
+      [currentTimeStamp]: {
+        cacheSize: 0,
+        hits: 0,
+        falsyHits: 0,
+        emptyHits: 0,
+        misses: 0,
+        expirations: 0,
+        evictions: 0,
+        invalidateOne: 0,
+        invalidateAll: 0,
+        sets: 0,
+      },
+    };
+  }
+
+  resetForCache(cacheId) {
+    for (let key of Object.keys(this.records[cacheId])) {
+      this.records[cacheId][key] = {
+        cacheSize: 0,
+        hits: 0,
+        falsyHits: 0,
+        emptyHits: 0,
+        misses: 0,
+        expirations: 0,
+        evictions: 0,
+        invalidateOne: 0,
+        invalidateAll: 0,
+        sets: 0,
+      };
     }
-    constructor(max, HeapCls) {
-        /* c8 ignore start */
-        if (!Stack.#constructing) {
-            throw new TypeError('instantiate Stack using Stack.create(n)');
-        }
-        /* c8 ignore stop */
-        this.heap = new HeapCls(max);
-        this.length = 0;
-    }
-    push(n) {
-        this.heap[this.length++] = n;
-    }
-    pop() {
-        return this.heap[--this.length];
-    }
-}
-/**
- * Default export, the thing you're using this module to get.
+  }
+
+  getStatistics() {
+    return this.records
+  }
+}/**
  *
- * The `K` and `V` types define the key and value types, respectively. The
- * optional `FC` type defines the type of the `context` object passed to
- * `cache.fetch()` and `cache.memo()`.
- *
- * Keys and values **must not** be `null` or `undefined`.
- *
- * All properties from the options object (with the exception of `max`,
- * `maxSize`, `fetchMethod`, `memoMethod`, `dispose` and `disposeAfter`) are
- * added as normal public members. (The listed options are read-only getters.)
- *
- * Changing any of these will alter the defaults for subsequent method calls.
+ * @param {Date} date
+ * @returns {string}
  */
-class LRUCache {
-    // options that cannot be changed without disaster
-    #max;
-    #maxSize;
-    #dispose;
-    #disposeAfter;
-    #fetchMethod;
-    #memoMethod;
-    /**
-     * {@link LRUCache.OptionsBase.ttl}
-     */
-    ttl;
-    /**
-     * {@link LRUCache.OptionsBase.ttlResolution}
-     */
-    ttlResolution;
-    /**
-     * {@link LRUCache.OptionsBase.ttlAutopurge}
-     */
-    ttlAutopurge;
-    /**
-     * {@link LRUCache.OptionsBase.updateAgeOnGet}
-     */
-    updateAgeOnGet;
-    /**
-     * {@link LRUCache.OptionsBase.updateAgeOnHas}
-     */
-    updateAgeOnHas;
-    /**
-     * {@link LRUCache.OptionsBase.allowStale}
-     */
-    allowStale;
-    /**
-     * {@link LRUCache.OptionsBase.noDisposeOnSet}
-     */
-    noDisposeOnSet;
-    /**
-     * {@link LRUCache.OptionsBase.noUpdateTTL}
-     */
-    noUpdateTTL;
-    /**
-     * {@link LRUCache.OptionsBase.maxEntrySize}
-     */
-    maxEntrySize;
-    /**
-     * {@link LRUCache.OptionsBase.sizeCalculation}
-     */
-    sizeCalculation;
-    /**
-     * {@link LRUCache.OptionsBase.noDeleteOnFetchRejection}
-     */
-    noDeleteOnFetchRejection;
-    /**
-     * {@link LRUCache.OptionsBase.noDeleteOnStaleGet}
-     */
-    noDeleteOnStaleGet;
-    /**
-     * {@link LRUCache.OptionsBase.allowStaleOnFetchAbort}
-     */
-    allowStaleOnFetchAbort;
-    /**
-     * {@link LRUCache.OptionsBase.allowStaleOnFetchRejection}
-     */
-    allowStaleOnFetchRejection;
-    /**
-     * {@link LRUCache.OptionsBase.ignoreFetchAbort}
-     */
-    ignoreFetchAbort;
-    // computed properties
-    #size;
-    #calculatedSize;
-    #keyMap;
-    #keyList;
-    #valList;
-    #next;
-    #prev;
-    #head;
-    #tail;
-    #free;
-    #disposed;
-    #sizes;
-    #starts;
-    #ttls;
-    #hasDispose;
-    #hasFetchMethod;
-    #hasDisposeAfter;
-    /**
-     * Do not call this method unless you need to inspect the
-     * inner workings of the cache.  If anything returned by this
-     * object is modified in any way, strange breakage may occur.
-     *
-     * These fields are private for a reason!
-     *
-     * @internal
-     */
-    static unsafeExposeInternals(c) {
-        return {
-            // properties
-            starts: c.#starts,
-            ttls: c.#ttls,
-            sizes: c.#sizes,
-            keyMap: c.#keyMap,
-            keyList: c.#keyList,
-            valList: c.#valList,
-            next: c.#next,
-            prev: c.#prev,
-            get head() {
-                return c.#head;
-            },
-            get tail() {
-                return c.#tail;
-            },
-            free: c.#free,
-            // methods
-            isBackgroundFetch: (p) => c.#isBackgroundFetch(p),
-            backgroundFetch: (k, index, options, context) => c.#backgroundFetch(k, index, options, context),
-            moveToTail: (index) => c.#moveToTail(index),
-            indexes: (options) => c.#indexes(options),
-            rindexes: (options) => c.#rindexes(options),
-            isStale: (index) => c.#isStale(index),
-        };
+function getTimestamp(date) {
+  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date
+    .getDate()
+    .toString()
+    .padStart(2, '0')}`
+}class HitStatistics {
+  constructor(cacheId, statisticTtlInHours, globalStatisticsRecord) {
+    this.cacheId = cacheId;
+    this.statisticTtlInHours = statisticTtlInHours;
+
+    this.collectionStart = new Date();
+    this.currentTimeStamp = getTimestamp(this.collectionStart);
+
+    this.records = globalStatisticsRecord || new HitStatisticsRecord();
+    this.records.initForCache(this.cacheId, this.currentTimeStamp);
+  }
+
+  get currentRecord() {
+    // safety net
+    /* c8 ignore next 14 */
+    if (!this.records.records[this.cacheId][this.currentTimeStamp]) {
+      this.records.records[this.cacheId][this.currentTimeStamp] = {
+        cacheSize: 0,
+        hits: 0,
+        falsyHits: 0,
+        emptyHits: 0,
+        misses: 0,
+        expirations: 0,
+        evictions: 0,
+        sets: 0,
+        invalidateOne: 0,
+        invalidateAll: 0,
+      };
     }
-    // Protected read-only members
-    /**
-     * {@link LRUCache.OptionsBase.max} (read-only)
-     */
-    get max() {
-        return this.#max;
+
+    return this.records.records[this.cacheId][this.currentTimeStamp]
+  }
+
+  hoursPassed() {
+    return (Date.now() - this.collectionStart) / 1000 / 60 / 60
+  }
+
+  addHit() {
+    this.archiveIfNeeded();
+    this.currentRecord.hits++;
+  }
+  addFalsyHit() {
+    this.archiveIfNeeded();
+    this.currentRecord.falsyHits++;
+  }
+
+  addEmptyHit() {
+    this.archiveIfNeeded();
+    this.currentRecord.emptyHits++;
+  }
+
+  addMiss() {
+    this.archiveIfNeeded();
+    this.currentRecord.misses++;
+  }
+
+  addEviction() {
+    this.archiveIfNeeded();
+    this.currentRecord.evictions++;
+  }
+
+  setCacheSize(currentSize) {
+    this.archiveIfNeeded();
+    this.currentRecord.cacheSize = currentSize;
+  }
+
+  addExpiration() {
+    this.archiveIfNeeded();
+    this.currentRecord.expirations++;
+  }
+
+  addSet() {
+    this.archiveIfNeeded();
+    this.currentRecord.sets++;
+  }
+
+  addInvalidateOne() {
+    this.archiveIfNeeded();
+    this.currentRecord.invalidateOne++;
+  }
+
+  addInvalidateAll() {
+    this.archiveIfNeeded();
+    this.currentRecord.invalidateAll++;
+  }
+
+  getStatistics() {
+    return this.records.getStatistics()
+  }
+
+  archiveIfNeeded() {
+    if (this.hoursPassed() >= this.statisticTtlInHours) {
+      this.collectionStart = new Date();
+      this.currentTimeStamp = getTimestamp(this.collectionStart);
+      this.records.initForCache(this.cacheId, this.currentTimeStamp);
     }
-    /**
-     * {@link LRUCache.OptionsBase.maxSize} (read-only)
-     */
-    get maxSize() {
-        return this.#maxSize;
+  }
+}class LruObjectHitStatistics extends LruObject {
+  constructor(max, ttlInMsecs, cacheId, globalStatisticsRecord, statisticTtlInHours) {
+    super(max || 1000, ttlInMsecs || 0);
+
+    if (!cacheId) {
+      throw new Error('Cache id is mandatory')
     }
-    /**
-     * The total computed size of items in the cache (read-only)
-     */
-    get calculatedSize() {
-        return this.#calculatedSize;
+
+    this.hitStatistics = new HitStatistics(
+      cacheId,
+      statisticTtlInHours !== undefined ? statisticTtlInHours : 24,
+      globalStatisticsRecord,
+    );
+  }
+
+  getStatistics() {
+    return this.hitStatistics.getStatistics()
+  }
+
+  set(key, value) {
+    super.set(key, value);
+    this.hitStatistics.addSet();
+    this.hitStatistics.setCacheSize(this.size);
+  }
+
+  evict() {
+    super.evict();
+    this.hitStatistics.addEviction();
+    this.hitStatistics.setCacheSize(this.size);
+  }
+
+  delete(key, isExpiration = false) {
+    super.delete(key);
+
+    if (!isExpiration) {
+      this.hitStatistics.addInvalidateOne();
     }
-    /**
-     * The number of items stored in the cache (read-only)
-     */
-    get size() {
-        return this.#size;
+    this.hitStatistics.setCacheSize(this.size);
+  }
+
+  clear() {
+    super.clear();
+
+    this.hitStatistics.addInvalidateAll();
+    this.hitStatistics.setCacheSize(this.size);
+  }
+
+  get(key) {
+    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
+      const item = this.items[key];
+
+      // Item has already expired
+      if (this.ttl > 0 && item.expiry <= Date.now()) {
+        this.delete(key, true);
+        this.hitStatistics.addExpiration();
+        return
+      }
+
+      // Item is still fresh
+      this.bumpLru(item);
+      if (!item.value) {
+        this.hitStatistics.addFalsyHit();
+      }
+      if (item.value === undefined || item.value === null || item.value === '') {
+        this.hitStatistics.addEmptyHit();
+      }
+      this.hitStatistics.addHit();
+      return item.value
     }
-    /**
-     * {@link LRUCache.OptionsBase.fetchMethod} (read-only)
-     */
-    get fetchMethod() {
-        return this.#fetchMethod;
+    this.hitStatistics.addMiss();
+  }
+}class FifoObject {
+  constructor(max = 1000, ttlInMsecs = 0) {
+    if (isNaN(max) || max < 0) {
+      throw new Error('Invalid max value')
     }
-    get memoMethod() {
-        return this.#memoMethod;
+
+    if (isNaN(ttlInMsecs) || ttlInMsecs < 0) {
+      throw new Error('Invalid ttl value')
     }
-    /**
-     * {@link LRUCache.OptionsBase.dispose} (read-only)
-     */
-    get dispose() {
-        return this.#dispose;
+
+    this.first = null;
+    this.items = Object.create(null);
+    this.last = null;
+    this.size = 0;
+    this.max = max;
+    this.ttl = ttlInMsecs;
+  }
+
+  clear() {
+    this.items = Object.create(null);
+    this.first = null;
+    this.last = null;
+    this.size = 0;
+  }
+
+  delete(key) {
+    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
+      const deletedItem = this.items[key];
+
+      delete this.items[key];
+      this.size--;
+
+      if (deletedItem.prev !== null) {
+        deletedItem.prev.next = deletedItem.next;
+      }
+
+      if (deletedItem.next !== null) {
+        deletedItem.next.prev = deletedItem.prev;
+      }
+
+      if (this.first === deletedItem) {
+        this.first = deletedItem.next;
+      }
+
+      if (this.last === deletedItem) {
+        this.last = deletedItem.prev;
+      }
     }
-    /**
-     * {@link LRUCache.OptionsBase.disposeAfter} (read-only)
-     */
-    get disposeAfter() {
-        return this.#disposeAfter;
+  }
+
+  deleteMany(keys) {
+    for (var i = 0; i < keys.length; i++) {
+      this.delete(keys[i]);
     }
-    constructor(options) {
-        const { max = 0, ttl, ttlResolution = 1, ttlAutopurge, updateAgeOnGet, updateAgeOnHas, allowStale, dispose, disposeAfter, noDisposeOnSet, noUpdateTTL, maxSize = 0, maxEntrySize = 0, sizeCalculation, fetchMethod, memoMethod, noDeleteOnFetchRejection, noDeleteOnStaleGet, allowStaleOnFetchRejection, allowStaleOnFetchAbort, ignoreFetchAbort, } = options;
-        if (max !== 0 && !isPosInt(max)) {
-            throw new TypeError('max option must be a nonnegative integer');
-        }
-        const UintArray = max ? getUintArray(max) : Array;
-        if (!UintArray) {
-            throw new Error('invalid max value: ' + max);
-        }
-        this.#max = max;
-        this.#maxSize = maxSize;
-        this.maxEntrySize = maxEntrySize || this.#maxSize;
-        this.sizeCalculation = sizeCalculation;
-        if (this.sizeCalculation) {
-            if (!this.#maxSize && !this.maxEntrySize) {
-                throw new TypeError('cannot set sizeCalculation without setting maxSize or maxEntrySize');
-            }
-            if (typeof this.sizeCalculation !== 'function') {
-                throw new TypeError('sizeCalculation set to non-function');
-            }
-        }
-        if (memoMethod !== undefined &&
-            typeof memoMethod !== 'function') {
-            throw new TypeError('memoMethod must be a function if defined');
-        }
-        this.#memoMethod = memoMethod;
-        if (fetchMethod !== undefined &&
-            typeof fetchMethod !== 'function') {
-            throw new TypeError('fetchMethod must be a function if specified');
-        }
-        this.#fetchMethod = fetchMethod;
-        this.#hasFetchMethod = !!fetchMethod;
-        this.#keyMap = new Map();
-        this.#keyList = new Array(max).fill(undefined);
-        this.#valList = new Array(max).fill(undefined);
-        this.#next = new UintArray(max);
-        this.#prev = new UintArray(max);
-        this.#head = 0;
-        this.#tail = 0;
-        this.#free = Stack.create(max);
-        this.#size = 0;
-        this.#calculatedSize = 0;
-        if (typeof dispose === 'function') {
-            this.#dispose = dispose;
-        }
-        if (typeof disposeAfter === 'function') {
-            this.#disposeAfter = disposeAfter;
-            this.#disposed = [];
-        }
-        else {
-            this.#disposeAfter = undefined;
-            this.#disposed = undefined;
-        }
-        this.#hasDispose = !!this.#dispose;
-        this.#hasDisposeAfter = !!this.#disposeAfter;
-        this.noDisposeOnSet = !!noDisposeOnSet;
-        this.noUpdateTTL = !!noUpdateTTL;
-        this.noDeleteOnFetchRejection = !!noDeleteOnFetchRejection;
-        this.allowStaleOnFetchRejection = !!allowStaleOnFetchRejection;
-        this.allowStaleOnFetchAbort = !!allowStaleOnFetchAbort;
-        this.ignoreFetchAbort = !!ignoreFetchAbort;
-        // NB: maxEntrySize is set to maxSize if it's set
-        if (this.maxEntrySize !== 0) {
-            if (this.#maxSize !== 0) {
-                if (!isPosInt(this.#maxSize)) {
-                    throw new TypeError('maxSize must be a positive integer if specified');
-                }
-            }
-            if (!isPosInt(this.maxEntrySize)) {
-                throw new TypeError('maxEntrySize must be a positive integer if specified');
-            }
-            this.#initializeSizeTracking();
-        }
-        this.allowStale = !!allowStale;
-        this.noDeleteOnStaleGet = !!noDeleteOnStaleGet;
-        this.updateAgeOnGet = !!updateAgeOnGet;
-        this.updateAgeOnHas = !!updateAgeOnHas;
-        this.ttlResolution =
-            isPosInt(ttlResolution) || ttlResolution === 0
-                ? ttlResolution
-                : 1;
-        this.ttlAutopurge = !!ttlAutopurge;
-        this.ttl = ttl || 0;
-        if (this.ttl) {
-            if (!isPosInt(this.ttl)) {
-                throw new TypeError('ttl must be a positive integer if specified');
-            }
-            this.#initializeTTLTracking();
-        }
-        // do not allow completely unbounded caches
-        if (this.#max === 0 && this.ttl === 0 && this.#maxSize === 0) {
-            throw new TypeError('At least one of max, maxSize, or ttl is required');
-        }
-        if (!this.ttlAutopurge && !this.#max && !this.#maxSize) {
-            const code = 'LRU_CACHE_UNBOUNDED';
-            if (shouldWarn(code)) {
-                warned.add(code);
-                const msg = 'TTL caching without ttlAutopurge, max, or maxSize can ' +
-                    'result in unbounded memory consumption.';
-                emitWarning(msg, 'UnboundedCacheWarning', code, LRUCache);
-            }
-        }
+  }
+
+  evict() {
+    if (this.size > 0) {
+      const item = this.first;
+
+      delete this.items[item.key];
+
+      if (--this.size === 0) {
+        this.first = null;
+        this.last = null;
+      } else {
+        this.first = item.next;
+        this.first.prev = null;
+      }
     }
-    /**
-     * Return the number of ms left in the item's TTL. If item is not in cache,
-     * returns `0`. Returns `Infinity` if item is in cache without a defined TTL.
-     */
-    getRemainingTTL(key) {
-        return this.#keyMap.has(key) ? Infinity : 0;
+  }
+
+  expiresAt(key) {
+    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
+      return this.items[key].expiry
     }
-    #initializeTTLTracking() {
-        const ttls = new ZeroArray(this.#max);
-        const starts = new ZeroArray(this.#max);
-        this.#ttls = ttls;
-        this.#starts = starts;
-        this.#setItemTTL = (index, ttl, start = perf.now()) => {
-            starts[index] = ttl !== 0 ? start : 0;
-            ttls[index] = ttl;
-            if (ttl !== 0 && this.ttlAutopurge) {
-                const t = setTimeout(() => {
-                    if (this.#isStale(index)) {
-                        this.#delete(this.#keyList[index], 'expire');
-                    }
-                }, ttl + 1);
-                // unref() not supported on all platforms
-                /* c8 ignore start */
-                if (t.unref) {
-                    t.unref();
-                }
-                /* c8 ignore stop */
-            }
-        };
-        this.#updateItemAge = index => {
-            starts[index] = ttls[index] !== 0 ? perf.now() : 0;
-        };
-        this.#statusTTL = (status, index) => {
-            if (ttls[index]) {
-                const ttl = ttls[index];
-                const start = starts[index];
-                /* c8 ignore next */
-                if (!ttl || !start)
-                    return;
-                status.ttl = ttl;
-                status.start = start;
-                status.now = cachedNow || getNow();
-                const age = status.now - start;
-                status.remainingTTL = ttl - age;
-            }
-        };
-        // debounce calls to perf.now() to 1s so we're not hitting
-        // that costly call repeatedly.
-        let cachedNow = 0;
-        const getNow = () => {
-            const n = perf.now();
-            if (this.ttlResolution > 0) {
-                cachedNow = n;
-                const t = setTimeout(() => (cachedNow = 0), this.ttlResolution);
-                // not available on all platforms
-                /* c8 ignore start */
-                if (t.unref) {
-                    t.unref();
-                }
-                /* c8 ignore stop */
-            }
-            return n;
-        };
-        this.getRemainingTTL = key => {
-            const index = this.#keyMap.get(key);
-            if (index === undefined) {
-                return 0;
-            }
-            const ttl = ttls[index];
-            const start = starts[index];
-            if (!ttl || !start) {
-                return Infinity;
-            }
-            const age = (cachedNow || getNow()) - start;
-            return ttl - age;
-        };
-        this.#isStale = index => {
-            const s = starts[index];
-            const t = ttls[index];
-            return !!t && !!s && (cachedNow || getNow()) - s > t;
-        };
+  }
+
+  get(key) {
+    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
+      const item = this.items[key];
+
+      if (this.ttl > 0 && item.expiry <= Date.now()) {
+        this.delete(key);
+        return
+      }
+
+      return item.value
     }
-    // conditionally set private methods related to TTL
-    #updateItemAge = () => { };
-    #statusTTL = () => { };
-    #setItemTTL = () => { };
-    /* c8 ignore stop */
-    #isStale = () => false;
-    #initializeSizeTracking() {
-        const sizes = new ZeroArray(this.#max);
-        this.#calculatedSize = 0;
-        this.#sizes = sizes;
-        this.#removeItemSize = index => {
-            this.#calculatedSize -= sizes[index];
-            sizes[index] = 0;
-        };
-        this.#requireSize = (k, v, size, sizeCalculation) => {
-            // provisionally accept background fetches.
-            // actual value size will be checked when they return.
-            if (this.#isBackgroundFetch(v)) {
-                return 0;
-            }
-            if (!isPosInt(size)) {
-                if (sizeCalculation) {
-                    if (typeof sizeCalculation !== 'function') {
-                        throw new TypeError('sizeCalculation must be a function');
-                    }
-                    size = sizeCalculation(v, k);
-                    if (!isPosInt(size)) {
-                        throw new TypeError('sizeCalculation return invalid (expect positive integer)');
-                    }
-                }
-                else {
-                    throw new TypeError('invalid size value (must be positive integer). ' +
-                        'When maxSize or maxEntrySize is used, sizeCalculation ' +
-                        'or size must be set.');
-                }
-            }
-            return size;
-        };
-        this.#addItemSize = (index, size, status) => {
-            sizes[index] = size;
-            if (this.#maxSize) {
-                const maxSize = this.#maxSize - sizes[index];
-                while (this.#calculatedSize > maxSize) {
-                    this.#evict(true);
-                }
-            }
-            this.#calculatedSize += sizes[index];
-            if (status) {
-                status.entrySize = size;
-                status.totalCalculatedSize = this.#calculatedSize;
-            }
-        };
+  }
+
+  getMany(keys) {
+    const result = [];
+
+    for (var i = 0; i < keys.length; i++) {
+      result.push(this.get(keys[i]));
     }
-    #removeItemSize = _i => { };
-    #addItemSize = (_i, _s, _st) => { };
-    #requireSize = (_k, _v, size, sizeCalculation) => {
-        if (size || sizeCalculation) {
-            throw new TypeError('cannot set size without setting maxSize or maxEntrySize on cache');
-        }
-        return 0;
+
+    return result
+  }
+
+  keys() {
+    return Object.keys(this.items)
+  }
+
+  set(key, value) {
+    // Replace existing item
+    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
+      const item = this.items[key];
+      item.value = value;
+
+      item.expiry = this.ttl > 0 ? Date.now() + this.ttl : this.ttl;
+
+      return
+    }
+
+    // Add new item
+    if (this.max > 0 && this.size === this.max) {
+      this.evict();
+    }
+
+    const item = {
+      expiry: this.ttl > 0 ? Date.now() + this.ttl : this.ttl,
+      key: key,
+      prev: this.last,
+      next: null,
+      value,
     };
-    *#indexes({ allowStale = this.allowStale } = {}) {
-        if (this.#size) {
-            for (let i = this.#tail; true;) {
-                if (!this.#isValidIndex(i)) {
-                    break;
-                }
-                if (allowStale || !this.#isStale(i)) {
-                    yield i;
-                }
-                if (i === this.#head) {
-                    break;
-                }
-                else {
-                    i = this.#prev[i];
-                }
-            }
-        }
+    this.items[key] = item;
+
+    if (++this.size === 1) {
+      this.first = item;
+    } else {
+      this.last.next = item;
     }
-    *#rindexes({ allowStale = this.allowStale } = {}) {
-        if (this.#size) {
-            for (let i = this.#head; true;) {
-                if (!this.#isValidIndex(i)) {
-                    break;
-                }
-                if (allowStale || !this.#isStale(i)) {
-                    yield i;
-                }
-                if (i === this.#tail) {
-                    break;
-                }
-                else {
-                    i = this.#next[i];
-                }
-            }
-        }
-    }
-    #isValidIndex(index) {
-        return (index !== undefined &&
-            this.#keyMap.get(this.#keyList[index]) === index);
-    }
-    /**
-     * Return a generator yielding `[key, value]` pairs,
-     * in order from most recently used to least recently used.
-     */
-    *entries() {
-        for (const i of this.#indexes()) {
-            if (this.#valList[i] !== undefined &&
-                this.#keyList[i] !== undefined &&
-                !this.#isBackgroundFetch(this.#valList[i])) {
-                yield [this.#keyList[i], this.#valList[i]];
-            }
-        }
-    }
-    /**
-     * Inverse order version of {@link LRUCache.entries}
-     *
-     * Return a generator yielding `[key, value]` pairs,
-     * in order from least recently used to most recently used.
-     */
-    *rentries() {
-        for (const i of this.#rindexes()) {
-            if (this.#valList[i] !== undefined &&
-                this.#keyList[i] !== undefined &&
-                !this.#isBackgroundFetch(this.#valList[i])) {
-                yield [this.#keyList[i], this.#valList[i]];
-            }
-        }
-    }
-    /**
-     * Return a generator yielding the keys in the cache,
-     * in order from most recently used to least recently used.
-     */
-    *keys() {
-        for (const i of this.#indexes()) {
-            const k = this.#keyList[i];
-            if (k !== undefined &&
-                !this.#isBackgroundFetch(this.#valList[i])) {
-                yield k;
-            }
-        }
-    }
-    /**
-     * Inverse order version of {@link LRUCache.keys}
-     *
-     * Return a generator yielding the keys in the cache,
-     * in order from least recently used to most recently used.
-     */
-    *rkeys() {
-        for (const i of this.#rindexes()) {
-            const k = this.#keyList[i];
-            if (k !== undefined &&
-                !this.#isBackgroundFetch(this.#valList[i])) {
-                yield k;
-            }
-        }
-    }
-    /**
-     * Return a generator yielding the values in the cache,
-     * in order from most recently used to least recently used.
-     */
-    *values() {
-        for (const i of this.#indexes()) {
-            const v = this.#valList[i];
-            if (v !== undefined &&
-                !this.#isBackgroundFetch(this.#valList[i])) {
-                yield this.#valList[i];
-            }
-        }
-    }
-    /**
-     * Inverse order version of {@link LRUCache.values}
-     *
-     * Return a generator yielding the values in the cache,
-     * in order from least recently used to most recently used.
-     */
-    *rvalues() {
-        for (const i of this.#rindexes()) {
-            const v = this.#valList[i];
-            if (v !== undefined &&
-                !this.#isBackgroundFetch(this.#valList[i])) {
-                yield this.#valList[i];
-            }
-        }
-    }
-    /**
-     * Iterating over the cache itself yields the same results as
-     * {@link LRUCache.entries}
-     */
-    [Symbol.iterator]() {
-        return this.entries();
-    }
-    /**
-     * A String value that is used in the creation of the default string
-     * description of an object. Called by the built-in method
-     * `Object.prototype.toString`.
-     */
-    [Symbol.toStringTag] = 'LRUCache';
-    /**
-     * Find a value for which the supplied fn method returns a truthy value,
-     * similar to `Array.find()`. fn is called as `fn(value, key, cache)`.
-     */
-    find(fn, getOptions = {}) {
-        for (const i of this.#indexes()) {
-            const v = this.#valList[i];
-            const value = this.#isBackgroundFetch(v)
-                ? v.__staleWhileFetching
-                : v;
-            if (value === undefined)
-                continue;
-            if (fn(value, this.#keyList[i], this)) {
-                return this.get(this.#keyList[i], getOptions);
-            }
-        }
-    }
-    /**
-     * Call the supplied function on each item in the cache, in order from most
-     * recently used to least recently used.
-     *
-     * `fn` is called as `fn(value, key, cache)`.
-     *
-     * If `thisp` is provided, function will be called in the `this`-context of
-     * the provided object, or the cache if no `thisp` object is provided.
-     *
-     * Does not update age or recenty of use, or iterate over stale values.
-     */
-    forEach(fn, thisp = this) {
-        for (const i of this.#indexes()) {
-            const v = this.#valList[i];
-            const value = this.#isBackgroundFetch(v)
-                ? v.__staleWhileFetching
-                : v;
-            if (value === undefined)
-                continue;
-            fn.call(thisp, value, this.#keyList[i], this);
-        }
-    }
-    /**
-     * The same as {@link LRUCache.forEach} but items are iterated over in
-     * reverse order.  (ie, less recently used items are iterated over first.)
-     */
-    rforEach(fn, thisp = this) {
-        for (const i of this.#rindexes()) {
-            const v = this.#valList[i];
-            const value = this.#isBackgroundFetch(v)
-                ? v.__staleWhileFetching
-                : v;
-            if (value === undefined)
-                continue;
-            fn.call(thisp, value, this.#keyList[i], this);
-        }
-    }
-    /**
-     * Delete any stale entries. Returns true if anything was removed,
-     * false otherwise.
-     */
-    purgeStale() {
-        let deleted = false;
-        for (const i of this.#rindexes({ allowStale: true })) {
-            if (this.#isStale(i)) {
-                this.#delete(this.#keyList[i], 'expire');
-                deleted = true;
-            }
-        }
-        return deleted;
-    }
-    /**
-     * Get the extended info about a given entry, to get its value, size, and
-     * TTL info simultaneously. Returns `undefined` if the key is not present.
-     *
-     * Unlike {@link LRUCache#dump}, which is designed to be portable and survive
-     * serialization, the `start` value is always the current timestamp, and the
-     * `ttl` is a calculated remaining time to live (negative if expired).
-     *
-     * Always returns stale values, if their info is found in the cache, so be
-     * sure to check for expirations (ie, a negative {@link LRUCache.Entry#ttl})
-     * if relevant.
-     */
-    info(key) {
-        const i = this.#keyMap.get(key);
-        if (i === undefined)
-            return undefined;
-        const v = this.#valList[i];
-        const value = this.#isBackgroundFetch(v)
-            ? v.__staleWhileFetching
-            : v;
-        if (value === undefined)
-            return undefined;
-        const entry = { value };
-        if (this.#ttls && this.#starts) {
-            const ttl = this.#ttls[i];
-            const start = this.#starts[i];
-            if (ttl && start) {
-                const remain = ttl - (perf.now() - start);
-                entry.ttl = remain;
-                entry.start = Date.now();
-            }
-        }
-        if (this.#sizes) {
-            entry.size = this.#sizes[i];
-        }
-        return entry;
-    }
-    /**
-     * Return an array of [key, {@link LRUCache.Entry}] tuples which can be
-     * passed to {@link LRLUCache#load}.
-     *
-     * The `start` fields are calculated relative to a portable `Date.now()`
-     * timestamp, even if `performance.now()` is available.
-     *
-     * Stale entries are always included in the `dump`, even if
-     * {@link LRUCache.OptionsBase.allowStale} is false.
-     *
-     * Note: this returns an actual array, not a generator, so it can be more
-     * easily passed around.
-     */
-    dump() {
-        const arr = [];
-        for (const i of this.#indexes({ allowStale: true })) {
-            const key = this.#keyList[i];
-            const v = this.#valList[i];
-            const value = this.#isBackgroundFetch(v)
-                ? v.__staleWhileFetching
-                : v;
-            if (value === undefined || key === undefined)
-                continue;
-            const entry = { value };
-            if (this.#ttls && this.#starts) {
-                entry.ttl = this.#ttls[i];
-                // always dump the start relative to a portable timestamp
-                // it's ok for this to be a bit slow, it's a rare operation.
-                const age = perf.now() - this.#starts[i];
-                entry.start = Math.floor(Date.now() - age);
-            }
-            if (this.#sizes) {
-                entry.size = this.#sizes[i];
-            }
-            arr.unshift([key, entry]);
-        }
-        return arr;
-    }
-    /**
-     * Reset the cache and load in the items in entries in the order listed.
-     *
-     * The shape of the resulting cache may be different if the same options are
-     * not used in both caches.
-     *
-     * The `start` fields are assumed to be calculated relative to a portable
-     * `Date.now()` timestamp, even if `performance.now()` is available.
-     */
-    load(arr) {
-        this.clear();
-        for (const [key, entry] of arr) {
-            if (entry.start) {
-                // entry.start is a portable timestamp, but we may be using
-                // node's performance.now(), so calculate the offset, so that
-                // we get the intended remaining TTL, no matter how long it's
-                // been on ice.
-                //
-                // it's ok for this to be a bit slow, it's a rare operation.
-                const age = Date.now() - entry.start;
-                entry.start = perf.now() - age;
-            }
-            this.set(key, entry.value, entry);
-        }
-    }
-    /**
-     * Add a value to the cache.
-     *
-     * Note: if `undefined` is specified as a value, this is an alias for
-     * {@link LRUCache#delete}
-     *
-     * Fields on the {@link LRUCache.SetOptions} options param will override
-     * their corresponding values in the constructor options for the scope
-     * of this single `set()` operation.
-     *
-     * If `start` is provided, then that will set the effective start
-     * time for the TTL calculation. Note that this must be a previous
-     * value of `performance.now()` if supported, or a previous value of
-     * `Date.now()` if not.
-     *
-     * Options object may also include `size`, which will prevent
-     * calling the `sizeCalculation` function and just use the specified
-     * number if it is a positive integer, and `noDisposeOnSet` which
-     * will prevent calling a `dispose` function in the case of
-     * overwrites.
-     *
-     * If the `size` (or return value of `sizeCalculation`) for a given
-     * entry is greater than `maxEntrySize`, then the item will not be
-     * added to the cache.
-     *
-     * Will update the recency of the entry.
-     *
-     * If the value is `undefined`, then this is an alias for
-     * `cache.delete(key)`. `undefined` is never stored in the cache.
-     */
-    set(k, v, setOptions = {}) {
-        if (v === undefined) {
-            this.delete(k);
-            return this;
-        }
-        const { ttl = this.ttl, start, noDisposeOnSet = this.noDisposeOnSet, sizeCalculation = this.sizeCalculation, status, } = setOptions;
-        let { noUpdateTTL = this.noUpdateTTL } = setOptions;
-        const size = this.#requireSize(k, v, setOptions.size || 0, sizeCalculation);
-        // if the item doesn't fit, don't do anything
-        // NB: maxEntrySize set to maxSize by default
-        if (this.maxEntrySize && size > this.maxEntrySize) {
-            if (status) {
-                status.set = 'miss';
-                status.maxEntrySizeExceeded = true;
-            }
-            // have to delete, in case something is there already.
-            this.#delete(k, 'set');
-            return this;
-        }
-        let index = this.#size === 0 ? undefined : this.#keyMap.get(k);
-        if (index === undefined) {
-            // addition
-            index = (this.#size === 0
-                ? this.#tail
-                : this.#free.length !== 0
-                    ? this.#free.pop()
-                    : this.#size === this.#max
-                        ? this.#evict(false)
-                        : this.#size);
-            this.#keyList[index] = k;
-            this.#valList[index] = v;
-            this.#keyMap.set(k, index);
-            this.#next[this.#tail] = index;
-            this.#prev[index] = this.#tail;
-            this.#tail = index;
-            this.#size++;
-            this.#addItemSize(index, size, status);
-            if (status)
-                status.set = 'add';
-            noUpdateTTL = false;
-        }
-        else {
-            // update
-            this.#moveToTail(index);
-            const oldVal = this.#valList[index];
-            if (v !== oldVal) {
-                if (this.#hasFetchMethod && this.#isBackgroundFetch(oldVal)) {
-                    oldVal.__abortController.abort(new Error('replaced'));
-                    const { __staleWhileFetching: s } = oldVal;
-                    if (s !== undefined && !noDisposeOnSet) {
-                        if (this.#hasDispose) {
-                            this.#dispose?.(s, k, 'set');
-                        }
-                        if (this.#hasDisposeAfter) {
-                            this.#disposed?.push([s, k, 'set']);
-                        }
-                    }
-                }
-                else if (!noDisposeOnSet) {
-                    if (this.#hasDispose) {
-                        this.#dispose?.(oldVal, k, 'set');
-                    }
-                    if (this.#hasDisposeAfter) {
-                        this.#disposed?.push([oldVal, k, 'set']);
-                    }
-                }
-                this.#removeItemSize(index);
-                this.#addItemSize(index, size, status);
-                this.#valList[index] = v;
-                if (status) {
-                    status.set = 'replace';
-                    const oldValue = oldVal && this.#isBackgroundFetch(oldVal)
-                        ? oldVal.__staleWhileFetching
-                        : oldVal;
-                    if (oldValue !== undefined)
-                        status.oldValue = oldValue;
-                }
-            }
-            else if (status) {
-                status.set = 'update';
-            }
-        }
-        if (ttl !== 0 && !this.#ttls) {
-            this.#initializeTTLTracking();
-        }
-        if (this.#ttls) {
-            if (!noUpdateTTL) {
-                this.#setItemTTL(index, ttl, start);
-            }
-            if (status)
-                this.#statusTTL(status, index);
-        }
-        if (!noDisposeOnSet && this.#hasDisposeAfter && this.#disposed) {
-            const dt = this.#disposed;
-            let task;
-            while ((task = dt?.shift())) {
-                this.#disposeAfter?.(...task);
-            }
-        }
-        return this;
-    }
-    /**
-     * Evict the least recently used item, returning its value or
-     * `undefined` if cache is empty.
-     */
-    pop() {
-        try {
-            while (this.#size) {
-                const val = this.#valList[this.#head];
-                this.#evict(true);
-                if (this.#isBackgroundFetch(val)) {
-                    if (val.__staleWhileFetching) {
-                        return val.__staleWhileFetching;
-                    }
-                }
-                else if (val !== undefined) {
-                    return val;
-                }
-            }
-        }
-        finally {
-            if (this.#hasDisposeAfter && this.#disposed) {
-                const dt = this.#disposed;
-                let task;
-                while ((task = dt?.shift())) {
-                    this.#disposeAfter?.(...task);
-                }
-            }
-        }
-    }
-    #evict(free) {
-        const head = this.#head;
-        const k = this.#keyList[head];
-        const v = this.#valList[head];
-        if (this.#hasFetchMethod && this.#isBackgroundFetch(v)) {
-            v.__abortController.abort(new Error('evicted'));
-        }
-        else if (this.#hasDispose || this.#hasDisposeAfter) {
-            if (this.#hasDispose) {
-                this.#dispose?.(v, k, 'evict');
-            }
-            if (this.#hasDisposeAfter) {
-                this.#disposed?.push([v, k, 'evict']);
-            }
-        }
-        this.#removeItemSize(head);
-        // if we aren't about to use the index, then null these out
-        if (free) {
-            this.#keyList[head] = undefined;
-            this.#valList[head] = undefined;
-            this.#free.push(head);
-        }
-        if (this.#size === 1) {
-            this.#head = this.#tail = 0;
-            this.#free.length = 0;
-        }
-        else {
-            this.#head = this.#next[head];
-        }
-        this.#keyMap.delete(k);
-        this.#size--;
-        return head;
-    }
-    /**
-     * Check if a key is in the cache, without updating the recency of use.
-     * Will return false if the item is stale, even though it is technically
-     * in the cache.
-     *
-     * Check if a key is in the cache, without updating the recency of
-     * use. Age is updated if {@link LRUCache.OptionsBase.updateAgeOnHas} is set
-     * to `true` in either the options or the constructor.
-     *
-     * Will return `false` if the item is stale, even though it is technically in
-     * the cache. The difference can be determined (if it matters) by using a
-     * `status` argument, and inspecting the `has` field.
-     *
-     * Will not update item age unless
-     * {@link LRUCache.OptionsBase.updateAgeOnHas} is set.
-     */
-    has(k, hasOptions = {}) {
-        const { updateAgeOnHas = this.updateAgeOnHas, status } = hasOptions;
-        const index = this.#keyMap.get(k);
-        if (index !== undefined) {
-            const v = this.#valList[index];
-            if (this.#isBackgroundFetch(v) &&
-                v.__staleWhileFetching === undefined) {
-                return false;
-            }
-            if (!this.#isStale(index)) {
-                if (updateAgeOnHas) {
-                    this.#updateItemAge(index);
-                }
-                if (status) {
-                    status.has = 'hit';
-                    this.#statusTTL(status, index);
-                }
-                return true;
-            }
-            else if (status) {
-                status.has = 'stale';
-                this.#statusTTL(status, index);
-            }
-        }
-        else if (status) {
-            status.has = 'miss';
-        }
-        return false;
-    }
-    /**
-     * Like {@link LRUCache#get} but doesn't update recency or delete stale
-     * items.
-     *
-     * Returns `undefined` if the item is stale, unless
-     * {@link LRUCache.OptionsBase.allowStale} is set.
-     */
-    peek(k, peekOptions = {}) {
-        const { allowStale = this.allowStale } = peekOptions;
-        const index = this.#keyMap.get(k);
-        if (index === undefined ||
-            (!allowStale && this.#isStale(index))) {
-            return;
-        }
-        const v = this.#valList[index];
-        // either stale and allowed, or forcing a refresh of non-stale value
-        return this.#isBackgroundFetch(v) ? v.__staleWhileFetching : v;
-    }
-    #backgroundFetch(k, index, options, context) {
-        const v = index === undefined ? undefined : this.#valList[index];
-        if (this.#isBackgroundFetch(v)) {
-            return v;
-        }
-        const ac = new AC();
-        const { signal } = options;
-        // when/if our AC signals, then stop listening to theirs.
-        signal?.addEventListener('abort', () => ac.abort(signal.reason), {
-            signal: ac.signal,
-        });
-        const fetchOpts = {
-            signal: ac.signal,
-            options,
-            context,
-        };
-        const cb = (v, updateCache = false) => {
-            const { aborted } = ac.signal;
-            const ignoreAbort = options.ignoreFetchAbort && v !== undefined;
-            if (options.status) {
-                if (aborted && !updateCache) {
-                    options.status.fetchAborted = true;
-                    options.status.fetchError = ac.signal.reason;
-                    if (ignoreAbort)
-                        options.status.fetchAbortIgnored = true;
-                }
-                else {
-                    options.status.fetchResolved = true;
-                }
-            }
-            if (aborted && !ignoreAbort && !updateCache) {
-                return fetchFail(ac.signal.reason);
-            }
-            // either we didn't abort, and are still here, or we did, and ignored
-            const bf = p;
-            if (this.#valList[index] === p) {
-                if (v === undefined) {
-                    if (bf.__staleWhileFetching) {
-                        this.#valList[index] = bf.__staleWhileFetching;
-                    }
-                    else {
-                        this.#delete(k, 'fetch');
-                    }
-                }
-                else {
-                    if (options.status)
-                        options.status.fetchUpdated = true;
-                    this.set(k, v, fetchOpts.options);
-                }
-            }
-            return v;
-        };
-        const eb = (er) => {
-            if (options.status) {
-                options.status.fetchRejected = true;
-                options.status.fetchError = er;
-            }
-            return fetchFail(er);
-        };
-        const fetchFail = (er) => {
-            const { aborted } = ac.signal;
-            const allowStaleAborted = aborted && options.allowStaleOnFetchAbort;
-            const allowStale = allowStaleAborted || options.allowStaleOnFetchRejection;
-            const noDelete = allowStale || options.noDeleteOnFetchRejection;
-            const bf = p;
-            if (this.#valList[index] === p) {
-                // if we allow stale on fetch rejections, then we need to ensure that
-                // the stale value is not removed from the cache when the fetch fails.
-                const del = !noDelete || bf.__staleWhileFetching === undefined;
-                if (del) {
-                    this.#delete(k, 'fetch');
-                }
-                else if (!allowStaleAborted) {
-                    // still replace the *promise* with the stale value,
-                    // since we are done with the promise at this point.
-                    // leave it untouched if we're still waiting for an
-                    // aborted background fetch that hasn't yet returned.
-                    this.#valList[index] = bf.__staleWhileFetching;
-                }
-            }
-            if (allowStale) {
-                if (options.status && bf.__staleWhileFetching !== undefined) {
-                    options.status.returnedStale = true;
-                }
-                return bf.__staleWhileFetching;
-            }
-            else if (bf.__returned === bf) {
-                throw er;
-            }
-        };
-        const pcall = (res, rej) => {
-            const fmp = this.#fetchMethod?.(k, v, fetchOpts);
-            if (fmp && fmp instanceof Promise) {
-                fmp.then(v => res(v === undefined ? undefined : v), rej);
-            }
-            // ignored, we go until we finish, regardless.
-            // defer check until we are actually aborting,
-            // so fetchMethod can override.
-            ac.signal.addEventListener('abort', () => {
-                if (!options.ignoreFetchAbort ||
-                    options.allowStaleOnFetchAbort) {
-                    res(undefined);
-                    // when it eventually resolves, update the cache.
-                    if (options.allowStaleOnFetchAbort) {
-                        res = v => cb(v, true);
-                    }
-                }
-            });
-        };
-        if (options.status)
-            options.status.fetchDispatched = true;
-        const p = new Promise(pcall).then(cb, eb);
-        const bf = Object.assign(p, {
-            __abortController: ac,
-            __staleWhileFetching: v,
-            __returned: undefined,
-        });
-        if (index === undefined) {
-            // internal, don't expose status.
-            this.set(k, bf, { ...fetchOpts.options, status: undefined });
-            index = this.#keyMap.get(k);
-        }
-        else {
-            this.#valList[index] = bf;
-        }
-        return bf;
-    }
-    #isBackgroundFetch(p) {
-        if (!this.#hasFetchMethod)
-            return false;
-        const b = p;
-        return (!!b &&
-            b instanceof Promise &&
-            b.hasOwnProperty('__staleWhileFetching') &&
-            b.__abortController instanceof AC);
-    }
-    async fetch(k, fetchOptions = {}) {
-        const { 
-        // get options
-        allowStale = this.allowStale, updateAgeOnGet = this.updateAgeOnGet, noDeleteOnStaleGet = this.noDeleteOnStaleGet, 
-        // set options
-        ttl = this.ttl, noDisposeOnSet = this.noDisposeOnSet, size = 0, sizeCalculation = this.sizeCalculation, noUpdateTTL = this.noUpdateTTL, 
-        // fetch exclusive options
-        noDeleteOnFetchRejection = this.noDeleteOnFetchRejection, allowStaleOnFetchRejection = this.allowStaleOnFetchRejection, ignoreFetchAbort = this.ignoreFetchAbort, allowStaleOnFetchAbort = this.allowStaleOnFetchAbort, context, forceRefresh = false, status, signal, } = fetchOptions;
-        if (!this.#hasFetchMethod) {
-            if (status)
-                status.fetch = 'get';
-            return this.get(k, {
-                allowStale,
-                updateAgeOnGet,
-                noDeleteOnStaleGet,
-                status,
-            });
-        }
-        const options = {
-            allowStale,
-            updateAgeOnGet,
-            noDeleteOnStaleGet,
-            ttl,
-            noDisposeOnSet,
-            size,
-            sizeCalculation,
-            noUpdateTTL,
-            noDeleteOnFetchRejection,
-            allowStaleOnFetchRejection,
-            allowStaleOnFetchAbort,
-            ignoreFetchAbort,
-            status,
-            signal,
-        };
-        let index = this.#keyMap.get(k);
-        if (index === undefined) {
-            if (status)
-                status.fetch = 'miss';
-            const p = this.#backgroundFetch(k, index, options, context);
-            return (p.__returned = p);
-        }
-        else {
-            // in cache, maybe already fetching
-            const v = this.#valList[index];
-            if (this.#isBackgroundFetch(v)) {
-                const stale = allowStale && v.__staleWhileFetching !== undefined;
-                if (status) {
-                    status.fetch = 'inflight';
-                    if (stale)
-                        status.returnedStale = true;
-                }
-                return stale ? v.__staleWhileFetching : (v.__returned = v);
-            }
-            // if we force a refresh, that means do NOT serve the cached value,
-            // unless we are already in the process of refreshing the cache.
-            const isStale = this.#isStale(index);
-            if (!forceRefresh && !isStale) {
-                if (status)
-                    status.fetch = 'hit';
-                this.#moveToTail(index);
-                if (updateAgeOnGet) {
-                    this.#updateItemAge(index);
-                }
-                if (status)
-                    this.#statusTTL(status, index);
-                return v;
-            }
-            // ok, it is stale or a forced refresh, and not already fetching.
-            // refresh the cache.
-            const p = this.#backgroundFetch(k, index, options, context);
-            const hasStale = p.__staleWhileFetching !== undefined;
-            const staleVal = hasStale && allowStale;
-            if (status) {
-                status.fetch = isStale ? 'stale' : 'refresh';
-                if (staleVal && isStale)
-                    status.returnedStale = true;
-            }
-            return staleVal ? p.__staleWhileFetching : (p.__returned = p);
-        }
-    }
-    async forceFetch(k, fetchOptions = {}) {
-        const v = await this.fetch(k, fetchOptions);
-        if (v === undefined)
-            throw new Error('fetch() returned undefined');
-        return v;
-    }
-    memo(k, memoOptions = {}) {
-        const memoMethod = this.#memoMethod;
-        if (!memoMethod) {
-            throw new Error('no memoMethod provided to constructor');
-        }
-        const { context, forceRefresh, ...options } = memoOptions;
-        const v = this.get(k, options);
-        if (!forceRefresh && v !== undefined)
-            return v;
-        const vv = memoMethod(k, v, {
-            options,
-            context,
-        });
-        this.set(k, vv, options);
-        return vv;
-    }
-    /**
-     * Return a value from the cache. Will update the recency of the cache
-     * entry found.
-     *
-     * If the key is not found, get() will return `undefined`.
-     */
-    get(k, getOptions = {}) {
-        const { allowStale = this.allowStale, updateAgeOnGet = this.updateAgeOnGet, noDeleteOnStaleGet = this.noDeleteOnStaleGet, status, } = getOptions;
-        const index = this.#keyMap.get(k);
-        if (index !== undefined) {
-            const value = this.#valList[index];
-            const fetching = this.#isBackgroundFetch(value);
-            if (status)
-                this.#statusTTL(status, index);
-            if (this.#isStale(index)) {
-                if (status)
-                    status.get = 'stale';
-                // delete only if not an in-flight background fetch
-                if (!fetching) {
-                    if (!noDeleteOnStaleGet) {
-                        this.#delete(k, 'expire');
-                    }
-                    if (status && allowStale)
-                        status.returnedStale = true;
-                    return allowStale ? value : undefined;
-                }
-                else {
-                    if (status &&
-                        allowStale &&
-                        value.__staleWhileFetching !== undefined) {
-                        status.returnedStale = true;
-                    }
-                    return allowStale ? value.__staleWhileFetching : undefined;
-                }
-            }
-            else {
-                if (status)
-                    status.get = 'hit';
-                // if we're currently fetching it, we don't actually have it yet
-                // it's not stale, which means this isn't a staleWhileRefetching.
-                // If it's not stale, and fetching, AND has a __staleWhileFetching
-                // value, then that means the user fetched with {forceRefresh:true},
-                // so it's safe to return that value.
-                if (fetching) {
-                    return value.__staleWhileFetching;
-                }
-                this.#moveToTail(index);
-                if (updateAgeOnGet) {
-                    this.#updateItemAge(index);
-                }
-                return value;
-            }
-        }
-        else if (status) {
-            status.get = 'miss';
-        }
-    }
-    #connect(p, n) {
-        this.#prev[n] = p;
-        this.#next[p] = n;
-    }
-    #moveToTail(index) {
-        // if tail already, nothing to do
-        // if head, move head to next[index]
-        // else
-        //   move next[prev[index]] to next[index] (head has no prev)
-        //   move prev[next[index]] to prev[index]
-        // prev[index] = tail
-        // next[tail] = index
-        // tail = index
-        if (index !== this.#tail) {
-            if (index === this.#head) {
-                this.#head = this.#next[index];
-            }
-            else {
-                this.#connect(this.#prev[index], this.#next[index]);
-            }
-            this.#connect(this.#tail, index);
-            this.#tail = index;
-        }
-    }
-    /**
-     * Deletes a key out of the cache.
-     *
-     * Returns true if the key was deleted, false otherwise.
-     */
-    delete(k) {
-        return this.#delete(k, 'delete');
-    }
-    #delete(k, reason) {
-        let deleted = false;
-        if (this.#size !== 0) {
-            const index = this.#keyMap.get(k);
-            if (index !== undefined) {
-                deleted = true;
-                if (this.#size === 1) {
-                    this.#clear(reason);
-                }
-                else {
-                    this.#removeItemSize(index);
-                    const v = this.#valList[index];
-                    if (this.#isBackgroundFetch(v)) {
-                        v.__abortController.abort(new Error('deleted'));
-                    }
-                    else if (this.#hasDispose || this.#hasDisposeAfter) {
-                        if (this.#hasDispose) {
-                            this.#dispose?.(v, k, reason);
-                        }
-                        if (this.#hasDisposeAfter) {
-                            this.#disposed?.push([v, k, reason]);
-                        }
-                    }
-                    this.#keyMap.delete(k);
-                    this.#keyList[index] = undefined;
-                    this.#valList[index] = undefined;
-                    if (index === this.#tail) {
-                        this.#tail = this.#prev[index];
-                    }
-                    else if (index === this.#head) {
-                        this.#head = this.#next[index];
-                    }
-                    else {
-                        const pi = this.#prev[index];
-                        this.#next[pi] = this.#next[index];
-                        const ni = this.#next[index];
-                        this.#prev[ni] = this.#prev[index];
-                    }
-                    this.#size--;
-                    this.#free.push(index);
-                }
-            }
-        }
-        if (this.#hasDisposeAfter && this.#disposed?.length) {
-            const dt = this.#disposed;
-            let task;
-            while ((task = dt?.shift())) {
-                this.#disposeAfter?.(...task);
-            }
-        }
-        return deleted;
-    }
-    /**
-     * Clear the cache entirely, throwing away all values.
-     */
-    clear() {
-        return this.#clear('delete');
-    }
-    #clear(reason) {
-        for (const index of this.#rindexes({ allowStale: true })) {
-            const v = this.#valList[index];
-            if (this.#isBackgroundFetch(v)) {
-                v.__abortController.abort(new Error('deleted'));
-            }
-            else {
-                const k = this.#keyList[index];
-                if (this.#hasDispose) {
-                    this.#dispose?.(v, k, reason);
-                }
-                if (this.#hasDisposeAfter) {
-                    this.#disposed?.push([v, k, reason]);
-                }
-            }
-        }
-        this.#keyMap.clear();
-        this.#valList.fill(undefined);
-        this.#keyList.fill(undefined);
-        if (this.#ttls && this.#starts) {
-            this.#ttls.fill(0);
-            this.#starts.fill(0);
-        }
-        if (this.#sizes) {
-            this.#sizes.fill(0);
-        }
-        this.#head = 0;
-        this.#tail = 0;
-        this.#free.length = 0;
-        this.#calculatedSize = 0;
-        this.#size = 0;
-        if (this.#hasDisposeAfter && this.#disposed) {
-            const dt = this.#disposed;
-            let task;
-            while ((task = dt?.shift())) {
-                this.#disposeAfter?.(...task);
-            }
-        }
-    }
+
+    this.last = item;
+  }
 }
-//# sourceMappingURL=index.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-app@7.1.1/node_modules/@octokit/auth-app/dist-node/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-app@7.1.4/node_modules/@octokit/auth-app/dist-node/index.js
 // pkg/dist-src/index.js
 
 
@@ -39848,11 +39490,16 @@ async function getAppAuthentication({
   timeDifference
 }) {
   try {
-    const appAuthentication = await githubAppJwt({
+    const authOptions = {
       id: appId,
-      privateKey,
-      now: timeDifference && Math.floor(Date.now() / 1e3) + timeDifference
-    });
+      privateKey
+    };
+    if (timeDifference) {
+      Object.assign(authOptions, {
+        now: Math.floor(Date.now() / 1e3) + timeDifference
+      });
+    }
+    const appAuthentication = await githubAppJwt(authOptions);
     return {
       type: "app",
       token: appAuthentication.token,
@@ -39873,12 +39520,12 @@ async function getAppAuthentication({
 // pkg/dist-src/cache.js
 
 function getCache() {
-  return new LRUCache({
+  return new LruObject(
     // cache max. 15000 tokens, that will use less than 10mb memory
-    max: 15e3,
+    15e3,
     // Cache for 1 minute less than GitHub expiry
-    ttl: 1e3 * 60 * 59
-  });
+    1e3 * 60 * 59
+  );
 }
 async function dist_node_get(cache, options) {
   const cacheKey = optionsToCacheKey(options);
@@ -40024,6 +39671,26 @@ async function getInstallationAuthentication(state, options, customRequest) {
   }
   const appAuthentication = await getAppAuthentication(state);
   const request = customRequest || state.request;
+  const payload = {
+    installation_id: installationId,
+    mediaType: {
+      previews: ["machine-man"]
+    },
+    headers: {
+      authorization: `bearer ${appAuthentication.token}`
+    }
+  };
+  if (options.repositoryIds) {
+    Object.assign(payload, { repository_ids: options.repositoryIds });
+  }
+  if (options.repositoryNames) {
+    Object.assign(payload, {
+      repositories: options.repositoryNames
+    });
+  }
+  if (options.permissions) {
+    Object.assign(payload, { permissions: options.permissions });
+  }
   const {
     data: {
       token,
@@ -40033,34 +39700,29 @@ async function getInstallationAuthentication(state, options, customRequest) {
       repository_selection: repositorySelectionOptional,
       single_file: singleFileName
     }
-  } = await request("POST /app/installations/{installation_id}/access_tokens", {
-    installation_id: installationId,
-    repository_ids: options.repositoryIds,
-    repositories: options.repositoryNames,
-    permissions: options.permissions,
-    mediaType: {
-      previews: ["machine-man"]
-    },
-    headers: {
-      authorization: `bearer ${appAuthentication.token}`
-    }
-  });
+  } = await request(
+    "POST /app/installations/{installation_id}/access_tokens",
+    payload
+  );
   const permissions = permissionsOptional || {};
   const repositorySelection = repositorySelectionOptional || "all";
   const repositoryIds = repositories ? repositories.map((r) => r.id) : void 0;
   const repositoryNames = repositories ? repositories.map((repo) => repo.name) : void 0;
   const createdAt = (/* @__PURE__ */ new Date()).toISOString();
-  await dist_node_set(state.cache, optionsWithInstallationTokenFromState, {
+  const cacheOptions = {
     token,
     createdAt,
     expiresAt,
     repositorySelection,
     permissions,
     repositoryIds,
-    repositoryNames,
-    singleFileName
-  });
-  return toTokenAuthentication({
+    repositoryNames
+  };
+  if (singleFileName) {
+    Object.assign(payload, { singleFileName });
+  }
+  await dist_node_set(state.cache, optionsWithInstallationTokenFromState, cacheOptions);
+  const cacheData = {
     installationId,
     token,
     createdAt,
@@ -40068,9 +39730,12 @@ async function getInstallationAuthentication(state, options, customRequest) {
     repositorySelection,
     permissions,
     repositoryIds,
-    repositoryNames,
-    singleFileName
-  });
+    repositoryNames
+  };
+  if (singleFileName) {
+    Object.assign(cacheData, { singleFileName });
+  }
+  return toTokenAuthentication(cacheData);
 }
 
 // pkg/dist-src/auth.js
@@ -40221,7 +39886,7 @@ async function sendRequestWithRetries(state, request, options, createdAt, retrie
 }
 
 // pkg/dist-src/version.js
-var dist_node_VERSION = "7.1.1";
+var dist_node_VERSION = "7.1.4";
 
 // pkg/dist-src/index.js
 
@@ -40271,7 +39936,7 @@ function createAppAuth(options) {
 }
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-unauthenticated@6.1.0/node_modules/@octokit/auth-unauthenticated/dist-node/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-unauthenticated@6.1.1/node_modules/@octokit/auth-unauthenticated/dist-node/index.js
 // pkg/dist-src/auth.js
 async function auth_unauthenticated_dist_node_auth(reason) {
   return {
@@ -40348,12 +40013,12 @@ var createUnauthenticatedAuth = function createUnauthenticatedAuth2(options) {
 };
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+oauth-app@7.1.3/node_modules/@octokit/oauth-app/dist-node/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+oauth-app@7.1.5/node_modules/@octokit/oauth-app/dist-node/index.js
 // pkg/dist-src/index.js
 
 
 // pkg/dist-src/version.js
-var oauth_app_dist_node_VERSION = "7.1.3";
+var oauth_app_dist_node_VERSION = "7.1.5";
 
 // pkg/dist-src/add-event-handler.js
 function addEventHandler(state, eventName, eventHandler) {
@@ -40636,7 +40301,7 @@ async function deleteTokenWithState(state, options) {
     clientType: "oauth-app",
     ...optionsWithDefaults
   }) : (
-    // istanbul ignore next
+    /* v8 ignore next 4 */
     await deleteToken({
       clientType: "github-app",
       ...optionsWithDefaults
@@ -40670,7 +40335,7 @@ async function deleteAuthorizationWithState(state, options) {
     clientType: "oauth-app",
     ...optionsWithDefaults
   }) : (
-    // istanbul ignore next
+    /* v8 ignore next 4 */
     await deleteAuthorization({
       clientType: "github-app",
       ...optionsWithDefaults
@@ -40765,12 +40430,22 @@ async function handleRequest(app, { pathPrefix = "/api/github/oauth" }, request)
   const headers = request.headers;
   try {
     if (route === routes.getLogin) {
-      const { url } = app.getWebFlowAuthorizationUrl({
-        state: query.state,
-        scopes: query.scopes ? query.scopes.split(",") : void 0,
-        allowSignup: query.allowSignup ? query.allowSignup === "true" : void 0,
-        redirectUrl: query.redirectUrl
-      });
+      const authOptions = {};
+      if (query.state) {
+        Object.assign(authOptions, { state: query.state });
+      }
+      if (query.scopes) {
+        Object.assign(authOptions, { scopes: query.scopes.split(",") });
+      }
+      if (query.allowSignup) {
+        Object.assign(authOptions, {
+          allowSignup: query.allowSignup === "true"
+        });
+      }
+      if (query.redirectUrl) {
+        Object.assign(authOptions, { redirectUrl: query.redirectUrl });
+      }
+      const { url } = app.getWebFlowAuthorizationUrl(authOptions);
       return { status: 302, headers: { location: url } };
     }
     if (route === routes.getCallback) {
@@ -40986,10 +40661,13 @@ function parseRequest2(request) {
 
 // pkg/dist-src/middleware/web-worker/send-response.js
 function sendResponse2(octokitResponse) {
-  return new Response(octokitResponse.text, {
-    status: octokitResponse.status,
-    headers: octokitResponse.headers
-  });
+  const responseOptions = {
+    status: octokitResponse.status
+  };
+  if (octokitResponse.headers) {
+    Object.assign(responseOptions, { headers: octokitResponse.headers });
+  }
+  return new Response(octokitResponse.text, responseOptions);
 }
 
 // pkg/dist-src/middleware/web-worker/index.js
@@ -41118,12 +40796,12 @@ var OAuthApp = class {
 
 ;// CONCATENATED MODULE: external "node:buffer"
 const external_node_buffer_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:buffer");
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+webhooks-methods@5.1.0/node_modules/@octokit/webhooks-methods/dist-node/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+webhooks-methods@5.1.1/node_modules/@octokit/webhooks-methods/dist-node/index.js
 // pkg/dist-src/node/sign.js
 
 
 // pkg/dist-src/version.js
-var webhooks_methods_dist_node_VERSION = "5.1.0";
+var webhooks_methods_dist_node_VERSION = "5.1.1";
 
 // pkg/dist-src/node/sign.js
 async function sign(secret, payload) {
@@ -41181,7 +40859,7 @@ async function verifyWithFallback(secret, payload, signature, additionalSecrets)
 }
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+webhooks@13.3.0/node_modules/@octokit/webhooks/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+webhooks@13.5.1/node_modules/@octokit/webhooks/dist-bundle/index.js
 // pkg/dist-src/createLogger.js
 var createLogger = (logger) => ({
   debug: () => {
@@ -41383,6 +41061,10 @@ var emitterEventNames = [
   "projects_v2_item.edited",
   "projects_v2_item.reordered",
   "projects_v2_item.restored",
+  "projects_v2_status_update",
+  "projects_v2_status_update.created",
+  "projects_v2_status_update.deleted",
+  "projects_v2_status_update.edited",
   "public",
   "pull_request",
   "pull_request.assigned",
@@ -41458,7 +41140,6 @@ var emitterEventNames = [
   "secret_scanning_alert.created",
   "secret_scanning_alert.reopened",
   "secret_scanning_alert.resolved",
-  "secret_scanning_alert.revoked",
   "secret_scanning_alert.validated",
   "secret_scanning_alert_location",
   "secret_scanning_alert_location.created",
@@ -41478,6 +41159,11 @@ var emitterEventNames = [
   "star.created",
   "star.deleted",
   "status",
+  "sub_issues",
+  "sub_issues.parent_issue_added",
+  "sub_issues.parent_issue_removed",
+  "sub_issues.sub_issue_added",
+  "sub_issues.sub_issue_removed",
   "team",
   "team.added_to_repository",
   "team.created",
@@ -41651,10 +41337,11 @@ function createEventHandler(options) {
 // pkg/dist-src/verify-and-receive.js
 
 async function verifyAndReceive(state, event) {
-  const matchesSignature = await verify(
+  const matchesSignature = await verifyWithFallback(
     state.secret,
     event.payload,
-    event.signature
+    event.signature,
+    state.additionalSecrets
   ).catch(() => false);
   if (!matchesSignature) {
     const error = new Error(
@@ -41842,6 +41529,7 @@ var Webhooks = class {
     const state = {
       eventHandler: createEventHandler(options),
       secret: options.secret,
+      additionalSecrets: options.additionalSecrets,
       hooks: {},
       log: createLogger(options.log)
     };
@@ -41857,14 +41545,14 @@ var Webhooks = class {
 };
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+app@15.1.1/node_modules/@octokit/app/dist-node/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+app@15.1.3/node_modules/@octokit/app/dist-node/index.js
 // pkg/dist-src/index.js
 
 
 
 
 // pkg/dist-src/version.js
-var app_dist_node_VERSION = "15.1.1";
+var app_dist_node_VERSION = "15.1.3";
 
 // pkg/dist-src/webhooks.js
 
@@ -42193,7 +41881,7 @@ var App = class {
 };
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/octokit@4.0.3/node_modules/octokit/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/octokit@4.1.1/node_modules/octokit/dist-bundle/index.js
 // pkg/dist-src/octokit.js
 
 
