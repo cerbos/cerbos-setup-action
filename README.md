@@ -23,7 +23,7 @@ steps:
       version: latest
 ```
 
-### Setup `cerbos` and `cerbosctl` binaries and show `cerbos` binary version
+### Setup `cerbos` and `cerbosctl` binaries and show their versions
 ```yaml
 steps:
   - name: Setup Cerbos
@@ -32,24 +32,10 @@ steps:
       github_token: <github_token>
       version: latest
   
-  - name: Show cerbos binary version
+  - name: Show versions
     run: |
       cerbos --version
-```
-
-### Setup `cerbos` and `cerbosctl` binaries and show `cerbosctl` binary version
-```yaml
-steps:
-  - name: Setup Cerbos
-    uses: cerbos/cerbos-setup-action@v1
-    with:
-      github_token: <github_token>
-      version: latest
-  
-  - name: Show cerbosctl binary version
-    run: |
       cerbosctl version
-```
 
 ## Development
 
