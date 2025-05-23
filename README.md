@@ -1,6 +1,6 @@
 # Cerbos Setup Action
 
-A GitHub action to install [Cerbos](https://github.com/cerbos/cerbos) binaries for use in workflows.
+A GitHub action to install [Cerbos](https://github.com/cerbos/cerbos) binaries (`cerbos` and `cerbosctl`) for use in workflows.
 
 Cerbos helps you super-charge your authorization implementation by writing context-aware access control policies for your application resources. Find out more about Cerbos using the following resources:
 
@@ -13,6 +13,7 @@ Cerbos helps you super-charge your authorization implementation by writing conte
 
 If `version` is not specified or set to `latest`, the action will download the latest Cerbos release.
 
+### Setup `cerbos` and `cerbosctl` binaries
 ```yaml
 steps:
   - name: Setup Cerbos
@@ -21,6 +22,20 @@ steps:
       github_token: <github_token>
       version: latest
 ```
+
+### Setup `cerbos` and `cerbosctl` binaries and show their versions
+```yaml
+steps:
+  - name: Setup Cerbos
+    uses: cerbos/cerbos-setup-action@v1
+    with:
+      github_token: <github_token>
+      version: latest
+  
+  - name: Show versions
+    run: |
+      cerbos --version
+      cerbosctl version
 
 ## Development
 
