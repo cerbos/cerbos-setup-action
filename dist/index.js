@@ -38096,7 +38096,7 @@ function createOAuthDeviceAuth(options) {
 }
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-oauth-user@5.1.4/node_modules/@octokit/auth-oauth-user/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+auth-oauth-user@5.1.6/node_modules/@octokit/auth-oauth-user/dist-bundle/index.js
 // pkg/dist-src/index.js
 
 
@@ -40849,7 +40849,7 @@ async function verifyWithFallback(secret, payload, signature, additionalSecrets)
 }
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+webhooks@13.8.3/node_modules/@octokit/webhooks/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/@octokit+webhooks@13.9.0/node_modules/@octokit/webhooks/dist-bundle/index.js
 // pkg/dist-src/create-logger.js
 var createLogger = (logger) => ({
   debug: () => {
@@ -41362,14 +41362,160 @@ async function verifyAndReceive(state, event) {
   });
 }
 
-// pkg/dist-src/middleware/node/get-missing-headers.js
+// pkg/dist-src/middleware/create-middleware.js
+var isApplicationJsonRE = /^\s*(application\/json)\s*(?:;|$)/u;
 var WEBHOOK_HEADERS = (/* unused pure expression or super */ null && ([
   "x-github-event",
   "x-hub-signature-256",
   "x-github-delivery"
 ]));
-function getMissingHeaders(request) {
-  return WEBHOOK_HEADERS.filter((header) => !(header in request.headers));
+function createMiddleware(options) {
+  const { handleResponse: handleResponse3, getRequestHeader: getRequestHeader3, getPayload: getPayload3 } = options;
+  return function middleware(webhooks, options2) {
+    return async function octokitWebhooksMiddleware(request, response, next) {
+      let pathname;
+      try {
+        pathname = new URL(request.url, "http://localhost").pathname;
+      } catch (error) {
+        return handleResponse3(
+          JSON.stringify({
+            error: `Request URL could not be parsed: ${request.url}`
+          }),
+          422,
+          {
+            "content-type": "application/json"
+          },
+          response
+        );
+      }
+      if (pathname !== options2.path) {
+        next?.();
+        return handleResponse3(null);
+      } else if (request.method !== "POST") {
+        return handleResponse3(
+          JSON.stringify({
+            error: `Unknown route: ${request.method} ${pathname}`
+          }),
+          404,
+          {
+            "content-type": "application/json"
+          },
+          response
+        );
+      }
+      const contentType = getRequestHeader3(request, "content-type");
+      if (typeof contentType !== "string" || !isApplicationJsonRE.test(contentType)) {
+        return handleResponse3(
+          JSON.stringify({
+            error: `Unsupported "Content-Type" header value. Must be "application/json"`
+          }),
+          415,
+          {
+            "content-type": "application/json",
+            accept: "application/json"
+          },
+          response
+        );
+      }
+      const missingHeaders = WEBHOOK_HEADERS.filter((header) => {
+        return getRequestHeader3(request, header) == void 0;
+      }).join(", ");
+      if (missingHeaders) {
+        return handleResponse3(
+          JSON.stringify({
+            error: `Required headers missing: ${missingHeaders}`
+          }),
+          400,
+          {
+            "content-type": "application/json",
+            accept: "application/json"
+          },
+          response
+        );
+      }
+      const eventName = getRequestHeader3(
+        request,
+        "x-github-event"
+      );
+      const signature = getRequestHeader3(request, "x-hub-signature-256");
+      const id = getRequestHeader3(request, "x-github-delivery");
+      options2.log.debug(`${eventName} event received (id: ${id})`);
+      let didTimeout = false;
+      let timeout;
+      const timeoutPromise = new Promise((resolve) => {
+        timeout = setTimeout(() => {
+          didTimeout = true;
+          resolve(
+            handleResponse3(
+              "still processing\n",
+              202,
+              {
+                "Content-Type": "text/plain",
+                accept: "application/json"
+              },
+              response
+            )
+          );
+        }, options2.timeout);
+      });
+      const processWebhook = async () => {
+        try {
+          const payload = await getPayload3(request);
+          await webhooks.verifyAndReceive({
+            id,
+            name: eventName,
+            payload,
+            signature
+          });
+          clearTimeout(timeout);
+          if (didTimeout) return handleResponse3(null);
+          return handleResponse3(
+            "ok\n",
+            200,
+            {
+              "content-type": "text/plain",
+              accept: "application/json"
+            },
+            response
+          );
+        } catch (error) {
+          clearTimeout(timeout);
+          if (didTimeout) return handleResponse3(null);
+          const err = Array.from(error.errors)[0];
+          const errorMessage = err.message ? `${err.name}: ${err.message}` : "Error: An Unspecified error occurred";
+          const statusCode = typeof err.status !== "undefined" ? err.status : 500;
+          options2.log.error(error);
+          return handleResponse3(
+            JSON.stringify({
+              error: errorMessage
+            }),
+            statusCode,
+            {
+              "content-type": "application/json",
+              accept: "application/json"
+            },
+            response
+          );
+        }
+      };
+      return await Promise.race([timeoutPromise, processWebhook()]);
+    };
+  };
+}
+
+// pkg/dist-src/middleware/node/handle-response.js
+function handleResponse(body, status = 200, headers = {}, response) {
+  if (body === null) {
+    return false;
+  }
+  headers["content-length"] = body.length.toString();
+  response.writeHead(status, headers).end(body);
+  return true;
+}
+
+// pkg/dist-src/middleware/node/get-request-header.js
+function getRequestHeader(request, key) {
+  return request.headers[key];
 }
 
 // pkg/dist-src/concat-uint8array.js
@@ -41420,122 +41566,21 @@ function getPayloadFromRequestStream(request) {
   });
 }
 
-// pkg/dist-src/middleware/node/on-unhandled-request-default.js
-function onUnhandledRequestDefault(request, response) {
-  response.writeHead(404, {
-    "content-type": "application/json"
-  });
-  response.end(
-    JSON.stringify({
-      error: `Unknown route: ${request.method} ${request.url}`
-    })
-  );
-}
-
-// pkg/dist-src/middleware/node/middleware.js
-async function middleware(webhooks, options, request, response, next) {
-  let pathname;
-  try {
-    pathname = new URL(request.url, "http://localhost").pathname;
-  } catch (error) {
-    response.writeHead(422, {
-      "content-type": "application/json"
-    });
-    response.end(
-      JSON.stringify({
-        error: `Request URL could not be parsed: ${request.url}`
-      })
-    );
-    return true;
-  }
-  if (pathname !== options.path) {
-    next?.();
-    return false;
-  } else if (request.method !== "POST") {
-    onUnhandledRequestDefault(request, response);
-    return true;
-  }
-  if (!request.headers["content-type"] || !request.headers["content-type"].startsWith("application/json")) {
-    response.writeHead(415, {
-      "content-type": "application/json",
-      accept: "application/json"
-    });
-    response.end(
-      JSON.stringify({
-        error: `Unsupported "Content-Type" header value. Must be "application/json"`
-      })
-    );
-    return true;
-  }
-  const missingHeaders = getMissingHeaders(request).join(", ");
-  if (missingHeaders) {
-    response.writeHead(400, {
-      "content-type": "application/json"
-    });
-    response.end(
-      JSON.stringify({
-        error: `Required headers missing: ${missingHeaders}`
-      })
-    );
-    return true;
-  }
-  const eventName = request.headers["x-github-event"];
-  const signatureSHA256 = request.headers["x-hub-signature-256"];
-  const id = request.headers["x-github-delivery"];
-  options.log.debug(`${eventName} event received (id: ${id})`);
-  let didTimeout = false;
-  const timeout = setTimeout(() => {
-    didTimeout = true;
-    response.statusCode = 202;
-    response.end("still processing\n");
-  }, 9e3).unref();
-  try {
-    const payload = await getPayload(request);
-    await webhooks.verifyAndReceive({
-      id,
-      name: eventName,
-      payload,
-      signature: signatureSHA256
-    });
-    clearTimeout(timeout);
-    if (didTimeout) return true;
-    response.end("ok\n");
-    return true;
-  } catch (error) {
-    clearTimeout(timeout);
-    if (didTimeout) return true;
-    const err = Array.from(error.errors)[0];
-    const errorMessage = err.message ? `${err.name}: ${err.message}` : "Error: An Unspecified error occurred";
-    response.statusCode = typeof err.status !== "undefined" ? err.status : 500;
-    options.log.error(error);
-    response.end(
-      JSON.stringify({
-        error: errorMessage
-      })
-    );
-    return true;
-  }
-}
-
 // pkg/dist-src/middleware/node/index.js
 function dist_bundle_createNodeMiddleware(webhooks, {
   path = "/api/github/webhooks",
-  log = createLogger()
+  log = createLogger(),
+  timeout = 9e3
 } = {}) {
-  return middleware.bind(null, webhooks, {
+  return createMiddleware({
+    handleResponse,
+    getRequestHeader,
+    getPayload
+  })(webhooks, {
     path,
-    log
+    log,
+    timeout
   });
-}
-
-// pkg/dist-src/middleware/web/get-missing-headers.js
-var WEBHOOK_HEADERS2 = (/* unused pure expression or super */ null && ([
-  "x-github-event",
-  "x-hub-signature-256",
-  "x-github-delivery"
-]));
-function getMissingHeaders2(request) {
-  return WEBHOOK_HEADERS2.filter((header) => !request.headers.has(header));
 }
 
 // pkg/dist-src/middleware/web/get-payload.js
@@ -41543,128 +41588,36 @@ function getPayload2(request) {
   return request.text();
 }
 
-// pkg/dist-src/middleware/web/on-unhandled-request-default.js
-function onUnhandledRequestDefault2(request) {
-  return new Response(
-    JSON.stringify({
-      error: `Unknown route: ${request.method} ${request.url}`
-    }),
-    {
-      status: 404,
-      headers: {
-        "content-type": "application/json"
-      }
-    }
-  );
+// pkg/dist-src/middleware/web/get-request-header.js
+function getRequestHeader2(request, key) {
+  return request.headers.get(key);
 }
 
-// pkg/dist-src/middleware/web/middleware.js
-async function middleware2(webhooks, options, request) {
-  let pathname;
-  try {
-    pathname = new URL(request.url, "http://localhost").pathname;
-  } catch (error) {
-    return new Response(
-      JSON.stringify({
-        error: `Request URL could not be parsed: ${request.url}`
-      }),
-      {
-        status: 422,
-        headers: {
-          "content-type": "application/json"
-        }
-      }
-    );
+// pkg/dist-src/middleware/web/handle-response.js
+function handleResponse2(body, status = 200, headers = {}) {
+  if (body !== null) {
+    headers["content-length"] = body.length.toString();
   }
-  if (pathname !== options.path || request.method !== "POST") {
-    return onUnhandledRequestDefault2(request);
-  }
-  if (typeof request.headers.get("content-type") !== "string" || !request.headers.get("content-type").startsWith("application/json")) {
-    return new Response(
-      JSON.stringify({
-        error: `Unsupported "Content-Type" header value. Must be "application/json"`
-      }),
-      {
-        status: 415,
-        headers: {
-          "content-type": "application/json"
-        }
-      }
-    );
-  }
-  const missingHeaders = getMissingHeaders2(request).join(", ");
-  if (missingHeaders) {
-    return new Response(
-      JSON.stringify({
-        error: `Required headers missing: ${missingHeaders}`
-      }),
-      {
-        status: 422,
-        headers: {
-          "content-type": "application/json"
-        }
-      }
-    );
-  }
-  const eventName = request.headers.get("x-github-event");
-  const signatureSHA256 = request.headers.get("x-hub-signature-256");
-  const id = request.headers.get("x-github-delivery");
-  options.log.debug(`${eventName} event received (id: ${id})`);
-  let didTimeout = false;
-  let timeout;
-  const timeoutPromise = new Promise((resolve) => {
-    timeout = setTimeout(() => {
-      didTimeout = true;
-      resolve(
-        new Response("still processing\n", {
-          status: 202,
-          headers: { "Content-Type": "text/plain" }
-        })
-      );
-    }, 9e3);
+  return new Response(body, {
+    status,
+    headers
   });
-  const processWebhook = async () => {
-    try {
-      const payload = await getPayload2(request);
-      await webhooks.verifyAndReceive({
-        id,
-        name: eventName,
-        payload,
-        signature: signatureSHA256
-      });
-      clearTimeout(timeout);
-      if (didTimeout) return new Response(null);
-      return new Response("ok\n");
-    } catch (error) {
-      clearTimeout(timeout);
-      if (didTimeout) return new Response(null);
-      const err = Array.from(error.errors)[0];
-      const errorMessage = err.message ? `${err.name}: ${err.message}` : "Error: An Unspecified error occurred";
-      options.log.error(error);
-      return new Response(
-        JSON.stringify({
-          error: errorMessage
-        }),
-        {
-          status: typeof err.status !== "undefined" ? err.status : 500,
-          headers: {
-            "content-type": "application/json"
-          }
-        }
-      );
-    }
-  };
-  return await Promise.race([timeoutPromise, processWebhook()]);
 }
 
 // pkg/dist-src/middleware/web/index.js
 function createWebMiddleware(webhooks, {
   path = "/api/github/webhooks",
-  log = createLogger()
+  log = createLogger(),
+  timeout = 9e3
 } = {}) {
-  return middleware2.bind(null, webhooks, {
+  return createMiddleware({
+    handleResponse: handleResponse2,
+    getRequestHeader: getRequestHeader2,
+    getPayload: getPayload2
+  })(webhooks, {
     path,
-    log
+    log,
+    timeout
   });
 }
 
@@ -41919,14 +41872,14 @@ function dist_node_createNodeMiddleware(app, options = {}) {
   const oauthMiddleware = oauthNodeMiddleware(app.oauth, {
     pathPrefix: optionsWithDefaults.pathPrefix + "/oauth"
   });
-  return dist_node_middleware.bind(
+  return middleware.bind(
     null,
     optionsWithDefaults.pathPrefix,
     webhooksMiddleware,
     oauthMiddleware
   );
 }
-async function dist_node_middleware(pathPrefix, webhooksMiddleware, oauthMiddleware, request, response, next) {
+async function middleware(pathPrefix, webhooksMiddleware, oauthMiddleware, request, response, next) {
   const { pathname } = new URL(request.url, "http://localhost");
   if (pathname.startsWith(`${pathPrefix}/`)) {
     if (pathname === `${pathPrefix}/webhooks`) {
@@ -42037,7 +41990,7 @@ var App = class {
 };
 
 
-;// CONCATENATED MODULE: ./node_modules/.pnpm/octokit@4.1.3/node_modules/octokit/dist-bundle/index.js
+;// CONCATENATED MODULE: ./node_modules/.pnpm/octokit@4.1.4/node_modules/octokit/dist-bundle/index.js
 // pkg/dist-src/octokit.js
 
 

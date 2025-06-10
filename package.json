@@ -5,10 +5,10 @@
   "description": "Cerbos Setup Action",
   "exports": "./lib/main.js",
   "type": "module",
-  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39",
+  "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac",
   "engines": {
-    "node": "22.15.0",
-    "pnpm": "10.10.0"
+    "node": "22.16.0",
+    "pnpm": "10.12.1"
   },
   "scripts": {
     "build": "ncc build -o dist src/main.ts",
@@ -38,7 +38,7 @@
   "devDependencies": {
     "@eslint/js": "^9.19.0",
     "@types/glob": "^8.1.0",
-    "@types/node": "22.15.17",
+    "@types/node": "22.15.30",
     "@vercel/ncc": "^0.38.3",
     "eslint": "^9.19.0",
     "glob": "^11.0.1",
