@@ -32,7 +32,7 @@
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/tool-cache": "^2.0.1",
-    "octokit": "^4.1.2",
+    "octokit": "^5.0.0",
     "https-proxy-agent": "^7.0.6"
   },
   "devDependencies": {
