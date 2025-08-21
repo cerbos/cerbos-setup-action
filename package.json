@@ -31,21 +31,20 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@actions/tool-cache": "^2.0.1",
-    "octokit": "^5.0.0",
-    "https-proxy-agent": "^7.0.6"
+    "@actions/tool-cache": "^2.0.2",
+    "https-proxy-agent": "^7.0.6",
+    "octokit": "^5.0.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.19.0",
-    "@types/glob": "^9.0.0",
+    "@eslint/js": "^9.33.0",
     "@types/node": "22.17.2",
     "@vercel/ncc": "^0.38.3",
-    "eslint": "^9.19.0",
-    "glob": "^11.0.1",
-    "globals": "^16.0.0",
-    "prettier": "^3.4.1",
-    "tsx": "^4.19.3",
-    "typescript": "^5.7.2",
-    "typescript-eslint": "^8.23.0"
+    "eslint": "^9.33.0",
+    "glob": "^11.0.3",
+    "globals": "^16.3.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.40.0"
   }
 }
