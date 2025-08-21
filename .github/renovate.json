@@ -1,8 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "baseBranches": [
-    "main"
-  ],
+  "baseBranchPatterns": ["main"],
   "dependencyDashboard": true,
   "extends": [
     ":automergeDisabled",
@@ -15,9 +13,5 @@
     ":semanticCommitTypeAll(chore)",
     ":separateMultipleMajorReleases"
   ],
-  "labels": [
-    "area/dependencies",
-    "bots",
-    "kind/chore"
-  ]
+  "labels": ["area/dependencies", "bots", "kind/chore"]
 }
