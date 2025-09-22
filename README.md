@@ -36,6 +36,7 @@ steps:
     run: |
       cerbos --version
       cerbosctl version
+```
 
 ## Development
 
@@ -58,5 +59,5 @@ You'll need to install
 ### Build
 
 ```
-pnpm run all
+pnpm run build
 ```
