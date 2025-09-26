@@ -1,16 +1,18 @@
 name: 'Cerbos Setup Action'
-description: 'Setups cerbos by downloading and adding to the path'
+description: 'Sets up Cerbos and Cerbosctl binaries into PATH'
 author: 'Cerbos'
 
 inputs:
   github_token:
     description: 'The GitHub token to use'
     required: false
+
   version:
-    description: 'Cerbos tooling version to download'
+    description: 'Cerbos and Cerbosctl version to download'
     required: true
     default: 'latest'
 
+
 runs:
-  using: 'node20'
+  using: 'node24'
   main: './dist/index.js'
