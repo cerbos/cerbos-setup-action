@@ -29,7 +29,7 @@ async function run(): Promise<void> {
       : 'cerbos-setup-action'
   })
 
-  common.setup({
+  await common.setup({
     binaries: ['cerbos', 'cerbosctl'],
     githubToken: githubToken,
     octokit: octokit,
