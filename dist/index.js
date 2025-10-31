@@ -20,7 +20,7 @@ async function run() {
             ? process.env['GITHUB_REPOSITORY']
             : 'cerbos-setup-action'
     });
-    common.setup({
+    await common.setup({
         binaries: ['cerbos', 'cerbosctl'],
         githubToken: githubToken,
         octokit: octokit,
