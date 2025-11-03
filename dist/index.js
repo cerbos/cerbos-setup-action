@@ -22,7 +22,6 @@ async function run() {
     });
     await common.setup({
         binaries: ['cerbos', 'cerbosctl'],
-        githubToken: githubToken,
         octokit: octokit,
         version: version
     });
