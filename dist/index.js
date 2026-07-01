@@ -18,7 +18,7 @@ import * as require$$6 from 'util';
 import require$$6__default from 'util';
 import require$$0$1 from 'node:assert';
 import require$$0$3 from 'node:net';
-import require$$2 from 'node:http';
+import require$$2$1 from 'node:http';
 import require$$0$2 from 'node:stream';
 import require$$0 from 'node:buffer';
 import require$$0$4 from 'node:util';
@@ -273,6 +273,35 @@ var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof win
 
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+function getAugmentedNamespace(n) {
+  if (Object.prototype.hasOwnProperty.call(n, '__esModule')) return n;
+  var f = n.default;
+	if (typeof f == "function") {
+		var a = function a () {
+			var isInstance = false;
+      try {
+        isInstance = this instanceof a;
+      } catch {}
+			if (isInstance) {
+        return Reflect.construct(f, arguments, this.constructor);
+			}
+			return f.apply(this, arguments);
+		};
+		a.prototype = f.prototype;
+  } else a = {};
+  Object.defineProperty(a, '__esModule', {value: true});
+	Object.keys(n).forEach(function (k) {
+		var d = Object.getOwnPropertyDescriptor(n, k);
+		Object.defineProperty(a, k, d.get ? d : {
+			enumerable: true,
+			get: function () {
+				return n[k];
+			}
+		});
+	});
+	return a;
 }
 
 var tunnel$1 = {};
@@ -1363,7 +1392,7 @@ function requireUtil$7 () {
 
 	const assert = require$$0$1;
 	const { kDestroyed, kBodyUsed, kListeners, kBody } = requireSymbols$4();
-	const { IncomingMessage } = require$$2;
+	const { IncomingMessage } = require$$2$1;
 	const stream = require$$0$2;
 	const net = require$$0$3;
 	const { Blob } = require$$0;
@@ -11133,7 +11162,7 @@ function requireClient () {
 
 	const assert = require$$0$1;
 	const net = require$$0$3;
-	const http = require$$2;
+	const http = require$$2$1;
 	const util = requireUtil$7();
 	const { channels } = requireDiagnostics();
 	const Request = requireRequest$1();
@@ -15065,7 +15094,7 @@ function requireMockUtils () {
 	  kGetNetConnect
 	} = requireMockSymbols();
 	const { buildURL } = requireUtil$7();
-	const { STATUS_CODES } = require$$2;
+	const { STATUS_CODES } = require$$2$1;
 	const {
 	  types: {
 	    isPromise
@@ -19173,7 +19202,7 @@ function requireFetch () {
 	const { dataURLProcessor, serializeAMimeType, minimizeSupportedMimeType } = requireDataUrl();
 	const { getGlobalDispatcher } = requireGlobal();
 	const { webidl } = requireWebidl();
-	const { STATUS_CODES } = require$$2;
+	const { STATUS_CODES } = require$$2$1;
 	const GET_OR_HEAD = ['GET', 'HEAD'];
 
 	const defaultUserAgent = typeof __UNDICI_IS_NODE__ !== 'undefined' || typeof esbuildDetection !== 'undefined'
@@ -44295,11 +44324,11 @@ function requireCommon () {
 
 /* eslint-env browser */
 
-var hasRequiredBrowser$1;
+var hasRequiredBrowser;
 
-function requireBrowser$1 () {
-	if (hasRequiredBrowser$1) return browser$1.exports;
-	hasRequiredBrowser$1 = 1;
+function requireBrowser () {
+	if (hasRequiredBrowser) return browser$1.exports;
+	hasRequiredBrowser = 1;
 	(function (module, exports) {
 		/**
 		 * This is the web browser implementation of `debug()`.
@@ -44578,37 +44607,45 @@ function requireBrowser$1 () {
 var node = {exports: {}};
 
 /* eslint-env browser */
+/* eslint-disable n/no-unsupported-features/node-builtins */
 
-var browser;
-var hasRequiredBrowser;
-
-function requireBrowser () {
-	if (hasRequiredBrowser) return browser;
-	hasRequiredBrowser = 1;
-
-	function getChromeVersion() {
-		const matches = /(Chrome|Chromium)\/(?<chromeVersion>\d+)\./.exec(navigator.userAgent);
-
-		if (!matches) {
-			return;
-		}
-
-		return Number.parseInt(matches.groups.chromeVersion, 10);
+const level = (() => {
+	if (!('navigator' in globalThis)) {
+		return 0;
 	}
 
-	const colorSupport = getChromeVersion() >= 69 ? {
-		level: 1,
-		hasBasic: true,
-		has256: false,
-		has16m: false
-	} : false;
+	if (globalThis.navigator.userAgentData) {
+		const brand = navigator.userAgentData.brands.find(({brand}) => brand === 'Chromium');
+		if (brand?.version > 93) {
+			return 3;
+		}
+	}
 
-	browser = {
-		stdout: colorSupport,
-		stderr: colorSupport
-	};
-	return browser;
-}
+	if (/\b(Chrome|Chromium)\//.test(globalThis.navigator.userAgent)) {
+		return 1;
+	}
+
+	return 0;
+})();
+
+const colorSupport = level !== 0 && {
+	level,
+	hasBasic: true,
+	has256: level >= 2,
+	has16m: level >= 3,
+};
+
+const supportsColor = {
+	stdout: colorSupport,
+	stderr: colorSupport,
+};
+
+var browser = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    default: supportsColor
+});
+
+var require$$2 = /*@__PURE__*/getAugmentedNamespace(browser);
 
 /**
  * Module dependencies.
@@ -44647,7 +44684,7 @@ function requireNode () {
 		try {
 			// Optional dependency (as in, doesn't need to be installed, NOT like optionalDependencies in package.json)
 			// eslint-disable-next-line import/no-extraneous-dependencies
-			const supportsColor = requireBrowser();
+			const supportsColor = require$$2;
 
 			if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
 				exports.colors = [
@@ -44894,7 +44931,7 @@ function requireSrc () {
 	if (hasRequiredSrc) return src.exports;
 	hasRequiredSrc = 1;
 	if (typeof process === 'undefined' || process.type === 'renderer' || process.browser === true || process.__nwjs) {
-		src.exports = requireBrowser$1();
+		src.exports = requireBrowser();
 	} else {
 		src.exports = requireNode();
 	}
