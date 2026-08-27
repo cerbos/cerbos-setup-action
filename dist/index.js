@@ -33881,16 +33881,17 @@ function requireDist () {
 	 * Parse a `Content-Type` header.
 	 */
 	function parse(header, options) {
+	    const stopChar = options?.comma === true ? COMMA : 65536; // Sentinel for "no stop char".
 	    const len = header.length;
-	    let index = skipOWS(header, 0, len);
+	    let index = skipOWS(header, options?.start ?? 0, len);
 	    const valueStart = index;
-	    index = skipValue(header, index, len);
+	    index = skipValue(header, index, len, stopChar);
 	    const valueEnd = trailingOWS(header, valueStart, index);
 	    const type = header.slice(valueStart, valueEnd).toLowerCase();
-	    const parameters = options?.parameters === false
-	        ? new NullObject()
-	        : parseParameters(header, index, len);
-	    return { type, parameters };
+	    if (options?.parameters === false) {
+	        return { type, index, parameters: new NullObject() };
+	    }
+	    return parseParameters(header, type, index, len, stopChar);
 	}
 	const SP = 32; // " "
 	const HTAB = 9; // "\t"
@@ -33898,16 +33899,21 @@ function requireDist () {
 	const EQ = 61; // "="
 	const DQUOTE = 34; // '"'
 	const BSLASH = 92; // "\\"
+	const COMMA = 44; // ","
 	/**
 	 * Parses the parameters of a `Content-Type` header starting at the given index.
 	 */
-	function parseParameters(header, index, len) {
+	function parseParameters(header, type, index, len, stopChar) {
 	    const parameters = new NullObject();
 	    parameter: while (index < len) {
+	        if (header.charCodeAt(index) === stopChar)
+	            break;
 	        index = skipOWS(header, index + 1 /* Skip over ; */, len);
 	        const keyStart = index;
 	        while (index < len) {
 	            const code = header.charCodeAt(index);
+	            if (code === stopChar)
+	                break parameter;
 	            if (code === SEMI)
 	                continue parameter;
 	            if (code === EQ) {
@@ -33920,7 +33926,7 @@ function requireDist () {
 	                    while (index < len) {
 	                        const code = header.charCodeAt(index++);
 	                        if (code === DQUOTE) {
-	                            index = skipValue(header, index, len);
+	                            index = skipValue(header, index, len, stopChar);
 	                            if (parameters[key] === undefined)
 	                                parameters[key] = value;
 	                            break;
@@ -33934,7 +33940,7 @@ function requireDist () {
 	                    continue parameter;
 	                }
 	                const valueStart = index;
-	                index = skipValue(header, index, len);
+	                index = skipValue(header, index, len, stopChar);
 	                if (parameters[key] === undefined) {
 	                    const valueEnd = trailingOWS(header, valueStart, index);
 	                    parameters[key] = header.slice(valueStart, valueEnd);
@@ -33944,15 +33950,15 @@ function requireDist () {
 	            index++;
 	        }
 	    }
-	    return parameters;
+	    return { type, index, parameters };
 	}
 	/**
-	 * Skip over characters until a semicolon.
+	 * Skip over characters until a semicolon or other exit character.
 	 */
-	function skipValue(str, index, len) {
+	function skipValue(str, index, len, stopChar) {
 	    while (index < len) {
-	        const char = str.charCodeAt(index);
-	        if (char === SEMI)
+	        const code = str.charCodeAt(index);
+	        if (code === SEMI || code === stopChar)
 	            break;
 	        index++;
 	    }
@@ -34430,7 +34436,7 @@ const JSONParseV2 = (text, reviver) => {
 const MAX_INT = Number.MAX_SAFE_INTEGER.toString();
 const MAX_DIGITS = MAX_INT.length;
 const stringsOrLargeNumbers =
-  /"(?:\\.|[^"])*"|-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?/g;
+  /"(?:[^"\\]|\\.)*"|-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?/g;
 const noiseValueWithQuotes = /^"-?\d+n+"$/; // Noise - strings that match the custom format before being converted to it
 
 /**
@@ -34609,7 +34615,7 @@ class RequestError extends Error {
 // pkg/dist-src/index.js
 
 // pkg/dist-src/version.js
-var VERSION$7 = "10.0.13";
+var VERSION$7 = "10.0.14";
 
 // pkg/dist-src/defaults.js
 var defaults_default = {
