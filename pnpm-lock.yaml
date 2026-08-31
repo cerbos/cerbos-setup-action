@@ -12,8 +12,8 @@ importers:
         specifier: 3.0.1
         version: 3.0.1
       cerbos-actions-common:
-        specifier: github:cerbos/cerbos-actions-common#0.0.33
-        version: https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/c906347d60615aa302e4cfbaab47989cb513e832
+        specifier: github:cerbos/cerbos-actions-common#0.0.34
+        version: https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/f99c788702a54032bce6b8d22ef3c90f04194857
       https-proxy-agent:
         specifier: 9.1.0
         version: 9.1.0
@@ -715,10 +715,10 @@ packages:
     resolution: {integrity: sha512-ScQ4IuvIEF1TMlP7Zt+vjJ//9zlPb2SDcxWxM3bk8s6t6GGdJ7KO1dCcTidOPJKePW30LE/2cT7wCyPho9/Wxg==}
     engines: {node: 20 || >=22}
 
-  cerbos-actions-common@https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/c906347d60615aa302e4cfbaab47989cb513e832:
-    resolution: {gitHosted: true, integrity: sha512-nSCpbNvgSmj2WVTh/Txk0oXelrL/x2BOq2s0B+/BXuw5aBGvyrHqz3M5mk0txI1raHAddk3Z1lhqlHgcnAuNVw==, tarball: https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/c906347d60615aa302e4cfbaab47989cb513e832}
+  cerbos-actions-common@https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/f99c788702a54032bce6b8d22ef3c90f04194857:
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/f99c788702a54032bce6b8d22ef3c90f04194857}
     version: 0.0.0
-    engines: {node: 24.18.1, pnpm: 11.17.0}
+    engines: {node: 24.20.0, pnpm: 11.24.0}
 
   commondir@1.0.1:
     resolution: {integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg==}
@@ -1685,7 +1685,7 @@ snapshots:
     dependencies:
       balanced-match: 4.0.4
 
-  cerbos-actions-common@https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/c906347d60615aa302e4cfbaab47989cb513e832:
+  cerbos-actions-common@https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/f99c788702a54032bce6b8d22ef3c90f04194857:
     dependencies:
       '@actions/core': 3.0.1
       '@actions/io': 3.0.2
