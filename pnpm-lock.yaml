@@ -12,8 +12,8 @@ importers:
         specifier: 3.0.1
         version: 3.0.1
       cerbos-actions-common:
-        specifier: github:cerbos/cerbos-actions-common#0.0.34
-        version: https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/f99c788702a54032bce6b8d22ef3c90f04194857
+        specifier: github:cerbos/cerbos-actions-common#0.0.35
+        version: https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/12ba0146d41755a088ba5a3f6ccf8ea5637f55dd
       https-proxy-agent:
         specifier: 9.1.0
         version: 9.1.0
@@ -721,8 +721,8 @@ packages:
     resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
     engines: {node: 20 || >=22}
 
-  cerbos-actions-common@https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/f99c788702a54032bce6b8d22ef3c90f04194857:
-    resolution: {gitHosted: true, integrity: sha512-vVunJkhNjd1ua1AWvwozWJp/vq0/bYSqF53Gt5DBTSpZZW0uwW6mxQHjdEi2LwDLDCc0GiYRQY4k6vfTdEaBAA==, tarball: https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/f99c788702a54032bce6b8d22ef3c90f04194857}
+  cerbos-actions-common@https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/12ba0146d41755a088ba5a3f6ccf8ea5637f55dd:
+    resolution: {gitHosted: true, integrity: sha512-/Y1avb9qEcJWY/v2T/sT83NjKOy2LluveWSrV+qmERm8ig9drmp5gemJOEpOJFAPnxTtvb3Ff2mAxr0sPTzU1g==, tarball: https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/12ba0146d41755a088ba5a3f6ccf8ea5637f55dd}
     version: 0.0.0
     engines: {node: 24.20.0, pnpm: 11.24.0}
 
@@ -1124,8 +1124,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@4.4.3:
-    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+  zod@4.5.2:
+    resolution: {integrity: sha512-XkYXCol10+ba/6F/cueWV+TezUeOqXW0hdeJt5CdXjTYeAgAQg5N03RQdJ80mhfFE72+pblvYMW4wy2Qp4Qbrg==}
 
 snapshots:
 
@@ -1697,13 +1697,13 @@ snapshots:
     dependencies:
       balanced-match: 4.0.4
 
-  cerbos-actions-common@https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/f99c788702a54032bce6b8d22ef3c90f04194857:
+  cerbos-actions-common@https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/12ba0146d41755a088ba5a3f6ccf8ea5637f55dd:
     dependencies:
       '@actions/core': 3.0.1
       '@actions/io': 3.0.2
       '@actions/tool-cache': 4.0.0
       octokit: 5.0.5
-      zod: 4.4.3
+      zod: 4.5.2
 
   commondir@1.0.1: {}
 
@@ -2117,4 +2117,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@4.4.3: {}
+  zod@4.5.2: {}
