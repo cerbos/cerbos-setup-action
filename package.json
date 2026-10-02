@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@12.7.0+sha512.9c56477e360068d6e9dca6a92efb4e46b3dc5a52fcebf3d84d78b9736c0ded589a561621a52f68219a7a39facc63cdc079c3226ef9c9d5f02b79f74e69a807b6",
   "engines": {
-    "node": "24.20.0",
+    "node": "24.21.0",
     "pnpm": "12.7.0"
   },
   "scripts": {
@@ -33,7 +33,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "3.0.1",
-    "cerbos-actions-common": "github:cerbos/cerbos-actions-common#0.0.35",
+    "cerbos-actions-common": "github:cerbos/cerbos-actions-common#0.0.36",
     "https-proxy-agent": "9.1.0",
     "octokit": "5.0.5"
   },
@@ -42,15 +42,15 @@
     "@rollup/plugin-commonjs": "29.0.3",
     "@rollup/plugin-node-resolve": "16.0.3",
     "@rollup/plugin-typescript": "12.3.0",
-    "@types/node": "25.9.5",
-    "eslint": "10.9.1",
+    "@types/node": "25.9.8",
+    "eslint": "10.11.0",
     "glob-bin": "1.1.0",
-    "globals": "17.11.0",
-    "prettier": "3.9.6",
-    "rollup": "4.63.1",
+    "globals": "17.12.0",
+    "prettier": "3.9.9",
+    "rollup": "4.63.5",
     "tslib": "^2.8.1",
-    "tsx": "4.23.13",
+    "tsx": "4.23.15",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.68.0"
+    "typescript-eslint": "8.70.1"
   }
 }
