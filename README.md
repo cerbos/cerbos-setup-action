@@ -14,6 +14,7 @@ Cerbos helps you super-charge your authorization implementation by writing conte
 If `version` is not specified or set to `latest`, the action will download the latest Cerbos release.
 
 ### Setup `cerbos` and `cerbosctl` binaries
+
 ```yaml
 steps:
   - name: Setup Cerbos
@@ -24,6 +25,7 @@ steps:
 ```
 
 ### Setup `cerbos` and `cerbosctl` binaries and show their versions
+
 ```yaml
 steps:
   - name: Setup Cerbos
@@ -31,7 +33,7 @@ steps:
     with:
       github_token: <github_token>
       version: latest
-  
+
   - name: Show versions
     run: |
       cerbos --version
