@@ -1,20 +1,20 @@
-name: 'Cerbos Setup Action'
-description: 'Sets up Cerbos and Cerbosctl binaries into PATH'
-author: 'Cerbos'
+name: "Cerbos Setup Action"
+description: "Sets up Cerbos and Cerbosctl binaries into PATH"
+author: "Cerbos"
 branding:
-  icon: 'download-cloud'
-  color: 'orange'
+  icon: "download-cloud"
+  color: "orange"
 
 inputs:
   github_token:
-    description: 'The GitHub token to use'
+    description: "The GitHub token to use"
     required: false
 
   version:
-    description: 'Cerbos and Cerbosctl version to download'
+    description: "Cerbos and Cerbosctl version to download"
     required: true
-    default: 'latest'
+    default: "latest"
 
 runs:
-  using: 'node24'
-  main: './dist/index.js'
+  using: "node24"
+  main: "./dist/index.js"
