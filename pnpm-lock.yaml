@@ -170,8 +170,8 @@ importers:
         specifier: 3.0.1
         version: 3.0.1
       cerbos-actions-common:
-        specifier: github:cerbos/cerbos-actions-common#0.0.37
-        version: https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/8491a6b1b8ebc43b419bdb9b65ad0dcfe7d799e5
+        specifier: github:cerbos/cerbos-actions-common#0.0.38
+        version: https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/2271dd5a3a8c63a29ebabad3478f69a539ac12d2
       https-proxy-agent:
         specifier: 9.1.0
         version: 9.1.0
@@ -1013,10 +1013,10 @@ packages:
     resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
     engines: {node: 20 || >=22}
 
-  cerbos-actions-common@https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/8491a6b1b8ebc43b419bdb9b65ad0dcfe7d799e5:
-    resolution: {gitHosted: true, integrity: sha512-oBpBJ/e5S9siJiC3XsUvcH0kASp3ASjcanWgUpjvGIXZjhu537qsxla1HeRUCCfve1modoqF747RWP2tMK91Ow==, tarball: https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/8491a6b1b8ebc43b419bdb9b65ad0dcfe7d799e5}
+  cerbos-actions-common@https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/2271dd5a3a8c63a29ebabad3478f69a539ac12d2:
+    resolution: {gitHosted: true, integrity: sha512-FdpHTUVb0qFwNiVd8cUdmSkCP0vMYdWxPPGjQ1ECziWwCX/YhxX3EWahhMAQ8pfnAJgAcF84PCjuctQT+e9oHg==, tarball: https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/2271dd5a3a8c63a29ebabad3478f69a539ac12d2}
     version: 0.0.0
-    engines: {node: 24.21.0, pnpm: 12.8.2}
+    engines: {node: 26.13.0, pnpm: 12.16.1}
 
   commondir@1.0.1:
     resolution: {integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg==}
@@ -1244,8 +1244,8 @@ packages:
   universal-user-agent@7.0.3:
     resolution: {integrity: sha512-TmnEAEAsBJVZM/AADELsK76llnwcf9vMKuPz8JflO1frO8Lchitr0fNaN9d+Ap0BjKtqWqd/J17qeDnXh8CL2A==}
 
-  zod@4.6.5:
-    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
 snapshots:
 
@@ -1793,13 +1793,13 @@ snapshots:
     dependencies:
       balanced-match: 4.0.4
 
-  cerbos-actions-common@https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/8491a6b1b8ebc43b419bdb9b65ad0dcfe7d799e5:
+  cerbos-actions-common@https://codeload.github.com/cerbos/cerbos-actions-common/tar.gz/2271dd5a3a8c63a29ebabad3478f69a539ac12d2:
     dependencies:
       '@actions/core': 3.0.1
       '@actions/io': 3.0.2
       '@actions/tool-cache': 4.0.0
       octokit: 5.0.5
-      zod: 4.6.5
+      zod: 4.6.7
 
   commondir@1.0.1: {}
 
@@ -2065,4 +2065,4 @@ snapshots:
 
   universal-user-agent@7.0.3: {}
 
-  zod@4.6.5: {}
+  zod@4.6.7: {}
